@@ -33,9 +33,10 @@
 만료일을 자동 계산해 보여줍니다. 호수별 상세 보고서와 전체 집계 보고서를 생성할 수 있습니다.</p>
 
 <blockquote>
-  <p>⚠️ <strong>폴더 저장 기능은 데스크톱 Chrome 또는 Edge 브라우저에서만 동작합니다.</strong> (Safari, Firefox, 모바일 브라우저는
-미지원) 현장에서는 휴대폰/태블릿으로 사진·동영상을 촬영해 두었다가, 사무실 PC의 Chrome/Edge에서 이 페이지를 열어
-폴더를 연결한 뒤 일괄 업로드하는 방식을 권장합니다.</p>
+  <p>⚠️ <strong>폴더 저장 기능은 데스크톱 Chrome 또는 Edge 브라우저에서만 동작합니다.</strong> (Safari, Firefox, 모바일 브라우저는 미지원)</p>
+
+  <p>📱➡️🖥️ <strong>현장에서는 휴대폰/태블릿으로 사진·동영상을 촬영해 두었다가, 사무실 PC의 Chrome/Edge에서 이 페이지를 열어
+폴더를 연결한 뒤 일괄 업로드하는 방식을 권장합니다.</strong></p>
 </blockquote>
 
 <details class="haza-info" open="">
@@ -151,7 +152,79 @@
   </section>
 
   <section class="haza-card">
-    <h3>4. 하자 등록</h3>
+    <h3>4. 엑셀/기존 파일에서 하자 일괄 등록</h3>
+    <p class="haza-desc">
+      사업장마다 이미 만들어둔 하자 목록의 서식(열 제목·순서)이 시스템과 달라도, 어떤 열이 어떤 항목에
+      해당하는지만 지정하면 한 번에 가져올 수 있습니다. <b>엑셀(.xlsx/.xls)</b>은 바로 업로드하고,
+      <b>한글(HWP)·PDF·기타 문서</b>는 해당 프로그램에서 표를 <b>블록 선택 → 복사(Ctrl+C)</b>한 뒤 아래
+      붙여넣기 칸에 <b>붙여넣기(Ctrl+V)</b>하면 동일하게 처리됩니다.
+    </p>
+    <p class="haza-warn">
+      ※ 스캔한 이미지로만 된 PDF(선택 가능한 글자가 없는 경우)는 복사가 되지 않아 이 방식으로 가져올 수
+      없습니다 — 이 경우 아래 "5. 하자 등록"에서 직접 입력해 주세요.
+    </p>
+    <div class="haza-toolbar">
+      <label class="haza-file-btn">엑셀 업로드<input type="file" id="defectExcelInput" accept=".xlsx,.xls"></label>
+      <span class="haza-note">또는 아래에 표를 붙여넣으세요</span>
+    </div>
+    <label class="haza-span2">표 붙여넣기(한글/PDF/Excel/웹 표 등에서 복사한 내용, 첫 줄은 열 제목)
+      <textarea id="defectPasteInput" rows="4" placeholder="여기에 Ctrl+V로 붙여넣으세요"></textarea>
+    </label>
+    <div class="haza-toolbar">
+      <label>구분자
+        <select id="pasteDelim">
+          <option value="auto">자동감지</option>
+          <option value="tab">탭</option>
+          <option value="comma">쉼표(,)</option>
+          <option value="space">공백(2칸 이상)</option>
+        </select>
+      </label>
+      <button type="button" id="btnParsePaste" class="haza-btn haza-btn--outline">붙여넣은 표 분석</button>
+    </div>
+    <span id="defectImportFileNote" class="haza-note"></span>
+
+    <div id="defectImportMappingArea" style="display:none; margin-top:1rem;">
+      <p class="haza-desc">아래에서 시스템 항목별로 업로드한 파일의 어느 열을 사용할지 지정하세요. 매핑하지
+      않은 항목은 오른쪽의 기본값이 전체 행에 일괄 적용됩니다.</p>
+      <div class="haza-table-wrap">
+        <table class="haza-table">
+          <thead><tr><th>시스템 항목</th><th>파일의 열(매핑)</th><th>매핑 안 할 경우 기본값</th></tr></thead>
+          <tbody>
+            <tr><td>동 <span class="req">(동/호수 중 최소 하나 필요)</span></td><td><select id="mapDong" class="import-map-col"></select></td><td>-</td></tr>
+            <tr><td>호수/공용부명</td><td><select id="mapHo" class="import-map-col"></select></td><td>-</td></tr>
+            <tr><td>구분(전유부/공용부)</td><td><select id="mapArea" class="import-map-col"></select></td>
+              <td><select id="defaultArea"><option value="전유부">전유부</option><option value="공용부">공용부</option></select></td></tr>
+            <tr><td>존속기간 구분 <span class="req">(필수)</span></td><td><select id="mapYearClass" class="import-map-col"></select></td>
+              <td><select id="defaultYearClass">
+                <option value="finish2">2년·마감공사</option>
+                <option value="functional3">3년·설비·목공사·창호·조경</option>
+                <option value="structural5">5년·구조·안전</option>
+                <option value="pre5">5년·기산일 이전 발생</option>
+                <option value="major10">10년·주요구조부·지반</option>
+              </select></td></tr>
+            <tr><td>하자유형/내용</td><td><select id="mapDefectType" class="import-map-col"></select></td><td>미분류</td></tr>
+            <tr><td>심각도</td><td><select id="mapSeverity" class="import-map-col"></select></td>
+              <td><select id="defaultSeverity"><option value="경미">경미</option><option value="보통" selected>보통</option><option value="심각">심각</option></select></td></tr>
+            <tr><td>발견일</td><td><select id="mapFoundDate" class="import-map-col"></select></td><td><input type="date" id="defaultFoundDate"></td></tr>
+            <tr><td>설명/비고</td><td><select id="mapDescription" class="import-map-col"></select></td><td>-</td></tr>
+            <tr><td>인도일(전유부 기산일)</td><td><select id="mapMoveIn" class="import-map-col"></select></td><td>- (미매핑 시 개별 수정 필요)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="defectImportValueMapArea"></div>
+
+      <p class="haza-desc" style="margin-top:1rem;">미리보기(첫 5행)</p>
+      <div class="haza-table-wrap">
+        <table class="haza-table" id="defectImportPreviewTable"><thead></thead><tbody></tbody></table>
+      </div>
+
+      <button type="button" id="btnImportDefects" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">가져오기</button>
+    </div>
+  </section>
+
+  <section class="haza-card">
+    <h3>5. 하자 등록(수동 입력)</h3>
     <form id="defectForm" class="haza-grid">
       <label>동<input type="text" id="defDong" list="dongOptions" required></label>
       <label>호수/공용부명<input type="text" id="defHo" list="hoOptions" required></label>
@@ -201,7 +274,7 @@
   </section>
 
   <section class="haza-card">
-    <h3>5. 하자 목록</h3>
+    <h3>6. 하자 목록</h3>
     <div class="haza-toolbar">
       <input type="text" id="filterUnit" placeholder="동/호수 검색">
       <select id="filterYearClass">
@@ -219,7 +292,7 @@
   </section>
 
   <section class="haza-card">
-    <h3>6. 건설사 내용증명 발송</h3>
+    <h3>7. 건설사 내용증명 발송</h3>
     <p class="haza-desc">
       선택한 하자 항목으로 시공사(또는 시행사) 앞 <b>하자보수 이행 청구서(내용증명) 초안</b>을 생성합니다.
       생성된 문서는 인쇄하여 <b>우체국 내용증명 우편(또는 전자내용증명)</b>으로 직접 발송하세요 — 본 시스템이
@@ -250,7 +323,7 @@
   </section>
 
   <section class="haza-card">
-    <h3>7. 보고서 · 백업</h3>
+    <h3>8. 보고서 · 백업</h3>
     <div class="haza-toolbar">
       <select id="reportUnitSelect"><option value="">호수 선택</option></select>
       <button type="button" id="btnUnitReport" class="haza-btn haza-btn--solid">호수별 보고서 생성</button>
@@ -709,6 +782,241 @@ function downloadTemplate(){
   var wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, '호수목록');
   XLSX.writeFile(wb, '호수목록_양식.xlsx');
+}
+
+/* ---------- 하자 엑셀/붙여넣기 일괄 등록 ---------- */
+var IMPORT_FIELD_DEFS = [
+  {key:'dong', label:'동', candidates:['동']},
+  {key:'ho', label:'호수/공용부명', candidates:['호수','호']},
+  {key:'area', label:'구분(전유부/공용부)', candidates:['구분','전유','공용']},
+  {key:'yearClass', label:'존속기간 구분', candidates:['연차','존속기간','기간구분','하자구분','하자분류','분류']},
+  {key:'defectType', label:'하자유형/내용', candidates:['하자유형','하자내용','유형','내용']},
+  {key:'severity', label:'심각도', candidates:['심각도','등급','중요도']},
+  {key:'foundDate', label:'발견일', candidates:['발견일','점검일','확인일','일자','날짜']},
+  {key:'description', label:'설명/비고', candidates:['설명','비고','상세']},
+  {key:'moveIn', label:'인도일(전유부 기산일)', candidates:['인도','키불출','입주']}
+];
+var importRows = [];
+var importHeaders = [];
+var importValueMaps = {};
+
+function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function mapSelId(key){ return 'map' + capitalize(key); }
+
+function parsePastedTable(text, delimMode){
+  var lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').filter(function(l){ return l.trim().length; });
+  if(!lines.length) return null;
+  var delim;
+  if(delimMode === 'tab') delim = '\t';
+  else if(delimMode === 'comma') delim = ',';
+  else if(delimMode === 'space') delim = /\s{2,}/;
+  else { // auto
+    if(lines[0].indexOf('\t') !== -1) delim = '\t';
+    else if(lines[0].split(',').length > 1) delim = ',';
+    else delim = /\s{2,}/;
+  }
+  var splitLine = function(l){ return l.split(delim).map(function(c){ return c.trim(); }); };
+  var headerCells = splitLine(lines[0]);
+  var rows = lines.slice(1).map(function(l){
+    var cells = splitLine(l);
+    var obj = {};
+    headerCells.forEach(function(h, idx){ obj[h || ('열'+(idx+1))] = cells[idx] !== undefined ? cells[idx] : ''; });
+    return obj;
+  });
+  return { headers: headerCells, rows: rows };
+}
+
+async function handleDefectExcel(file){
+  var buf = await file.arrayBuffer();
+  var wb = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
+  var sheet = wb.Sheets[wb.SheetNames[0]];
+  var rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
+  if(!rows.length){ alert('엑셀에서 데이터를 찾을 수 없습니다.'); return; }
+  await setImportData(Object.keys(rows[0]), rows, file.name + ' — ' + rows.length + '행 감지됨');
+}
+
+async function handleDefectPaste(){
+  var text = $('defectPasteInput').value;
+  if(!text.trim()){ alert('먼저 표 내용을 붙여넣으세요.'); return; }
+  var parsed = parsePastedTable(text, $('pasteDelim').value);
+  if(!parsed || !parsed.rows.length){ alert('표를 인식하지 못했습니다. 구분자를 바꿔 다시 시도해 보세요.'); return; }
+  await setImportData(parsed.headers, parsed.rows, '붙여넣기 — ' + parsed.rows.length + '행 인식됨');
+}
+
+async function setImportData(headers, rows, note){
+  importHeaders = headers;
+  importRows = rows;
+  importValueMaps = {};
+  $('defectImportFileNote').textContent = note;
+  $('defectImportMappingArea').style.display = 'block';
+  renderImportColumnMappers();
+  await tryLoadSavedMapping();
+  onImportMappingChange();
+}
+
+function renderImportColumnMappers(){
+  IMPORT_FIELD_DEFS.forEach(function(f){
+    var sel = $(mapSelId(f.key));
+    sel.innerHTML = '<option value="">(매핑 안 함)</option>' + importHeaders.map(function(h){ return '<option value="'+escapeHtml(h)+'">'+escapeHtml(h)+'</option>'; }).join('');
+    var guess = findKey(importRows[0], f.candidates);
+    if(guess) sel.value = guess;
+  });
+}
+
+function uniqueValues(rows, col, cap){
+  cap = cap || 40;
+  var seen = {}; var out = []; var truncated = false;
+  for(var i=0;i<rows.length;i++){
+    var v = String(rows[i][col] == null ? '' : rows[i][col]).trim();
+    if(seen[v]) continue;
+    seen[v] = true;
+    if(out.length >= cap){ truncated = true; break; }
+    out.push(v);
+  }
+  return { values: out, truncated: truncated };
+}
+
+function guessValueMap(fieldKey, rawValue){
+  var v = String(rawValue||'');
+  if(fieldKey === 'area') return v.indexOf('공용') !== -1 ? '공용부' : '전유부';
+  if(fieldKey === 'severity'){
+    if(/심각|중대|긴급/.test(v)) return '심각';
+    if(/경미|미세/.test(v)) return '경미';
+    return '보통';
+  }
+  if(fieldKey === 'yearClass'){
+    if(/10|주요구조|지반/.test(v)) return 'major10';
+    if(/이전|기산일\s*전/.test(v)) return 'pre5';
+    if(/5|구조|안전|방수|철콘|철골|조적/.test(v)) return 'structural5';
+    if(/3|설비|창호|조경|목공/.test(v)) return 'functional3';
+    if(/2|마감/.test(v)) return 'finish2';
+    return 'finish2';
+  }
+  return '';
+}
+
+function renderValueMapUI(){
+  var html = '';
+  ['area','yearClass','severity'].forEach(function(fieldKey){
+    var col = $(mapSelId(fieldKey)).value;
+    if(!col) return;
+    var uniq = uniqueValues(importRows, col);
+    var targetOptions = fieldKey === 'area' ? [['전유부','전유부'],['공용부','공용부']]
+      : fieldKey === 'yearClass' ? ['finish2','functional3','structural5','pre5','major10'].map(function(k){ return [k, YEAR_CLASSES[k].label]; })
+      : [['경미','경미'],['보통','보통'],['심각','심각']];
+    var fieldLabel = IMPORT_FIELD_DEFS.find(function(f){ return f.key === fieldKey; }).label;
+    html += '<div class="haza-card" style="margin-top:.8rem;"><h4>"'+escapeHtml(fieldLabel)+'" 값 매핑 ('+escapeHtml(col)+' 열)</h4>';
+    if(uniq.truncated) html += '<p class="haza-warn">고유값이 많아 상위 '+uniq.values.length+'개만 표시합니다. 나머지 값은 기본값으로 처리됩니다.</p>';
+    uniq.values.forEach(function(v){
+      var existing = importValueMaps[fieldKey] && importValueMaps[fieldKey][v];
+      var guessTarget = existing || guessValueMap(fieldKey, v);
+      html += '<div class="haza-checkbox" style="margin:.3rem 0;">"'+escapeHtml(v||'(빈값)')+'" &rarr; <select class="import-value-map" data-field="'+fieldKey+'" data-raw="'+escapeHtml(v)+'">' +
+        targetOptions.map(function(o){ return '<option value="'+o[0]+'" '+(o[0]===guessTarget?'selected':'')+'>'+o[1]+'</option>'; }).join('') +
+        '</select></div>';
+    });
+    html += '</div>';
+  });
+  $('defectImportValueMapArea').innerHTML = html;
+  document.querySelectorAll('.import-value-map').forEach(function(sel){
+    var field = sel.dataset.field, raw = sel.dataset.raw;
+    importValueMaps[field] = importValueMaps[field] || {};
+    importValueMaps[field][raw] = sel.value;
+    sel.addEventListener('change', function(){
+      importValueMaps[field][raw] = sel.value;
+      renderImportPreview();
+    });
+  });
+}
+
+function getMappedDefect(row){
+  var dongCol = $('mapDong').value, hoCol = $('mapHo').value;
+  var areaCol = $('mapArea').value, ycCol = $('mapYearClass').value;
+  var typeCol = $('mapDefectType').value, sevCol = $('mapSeverity').value;
+  var foundCol = $('mapFoundDate').value, descCol = $('mapDescription').value, moveInCol = $('mapMoveIn').value;
+
+  var area = areaCol ? ((importValueMaps.area && importValueMaps.area[String(row[areaCol]||'').trim()]) || $('defaultArea').value) : $('defaultArea').value;
+  var yearClass = ycCol ? ((importValueMaps.yearClass && importValueMaps.yearClass[String(row[ycCol]||'').trim()]) || $('defaultYearClass').value) : $('defaultYearClass').value;
+  var severity = sevCol ? ((importValueMaps.severity && importValueMaps.severity[String(row[sevCol]||'').trim()]) || $('defaultSeverity').value) : $('defaultSeverity').value;
+  var foundDate = foundCol ? (normalizeExcelDate(row[foundCol]) || $('defaultFoundDate').value || todayStr()) : ($('defaultFoundDate').value || todayStr());
+  var moveIn = moveInCol ? normalizeExcelDate(row[moveInCol]) : '';
+  var defectType = typeCol ? String(row[typeCol]||'').trim() : '';
+  var description = descCol ? String(row[descCol]||'').trim() : '';
+
+  return {
+    dong: dongCol ? String(row[dongCol]||'').trim() : '',
+    ho: hoCol ? String(row[hoCol]||'').trim() : '',
+    area: area, yearClass: yearClass, defectType: defectType, severity: severity,
+    foundDate: foundDate, description: description || defectType, moveIn: moveIn
+  };
+}
+
+function renderImportPreview(){
+  var head = '<tr><th>동</th><th>호수</th><th>구분</th><th>존속기간</th><th>심각도</th><th>발견일</th><th>비고</th></tr>';
+  var rows = importRows.slice(0, 5).map(function(row){
+    var m = getMappedDefect(row);
+    var skip = !m.dong && !m.ho;
+    return '<tr'+(skip ? ' style="color:#c0392b;"' : '')+'>' +
+      '<td>'+escapeHtml(m.dong)+'</td><td>'+escapeHtml(m.ho)+'</td><td>'+escapeHtml(m.area)+'</td>' +
+      '<td>'+escapeHtml(YEAR_CLASSES[m.yearClass] ? YEAR_CLASSES[m.yearClass].label : m.yearClass)+'</td>' +
+      '<td>'+escapeHtml(m.severity)+'</td><td>'+escapeHtml(m.foundDate)+'</td>' +
+      '<td>'+(skip ? '동/호수 없음 — 건너뜀' : '')+'</td>' +
+    '</tr>';
+  }).join('');
+  document.querySelector('#defectImportPreviewTable').innerHTML = '<thead>'+head+'</thead><tbody>'+rows+'</tbody>';
+  $('btnImportDefects').textContent = '전체 ' + importRows.length + '건 가져오기';
+}
+
+function onImportMappingChange(){
+  renderValueMapUI();
+  renderImportPreview();
+}
+
+function headerSignature(headers){ return headers.slice().sort().join('|'); }
+
+async function saveImportMappingForReuse(){
+  var sig = headerSignature(importHeaders);
+  var mapping = {};
+  IMPORT_FIELD_DEFS.forEach(function(f){ mapping[f.key] = $(mapSelId(f.key)).value; });
+  await idbPut('kv', {key:'defectImportMapping:'+sig, mapping:mapping, valueMaps: importValueMaps});
+}
+async function tryLoadSavedMapping(){
+  var sig = headerSignature(importHeaders);
+  var saved = await idbGet('kv', 'defectImportMapping:' + sig);
+  if(saved){
+    IMPORT_FIELD_DEFS.forEach(function(f){ if(saved.mapping[f.key] !== undefined) $(mapSelId(f.key)).value = saved.mapping[f.key]; });
+    importValueMaps = saved.valueMaps || {};
+  }
+}
+
+async function runDefectImport(){
+  if(!importRows.length) return;
+  if(!$('mapDong').value && !$('mapHo').value){ alert('동 또는 호수 열을 최소 하나는 매핑하세요.'); return; }
+  var imported = 0, skippedMissingUnit = 0;
+  var jobs = [];
+  importRows.forEach(function(row){
+    var m = getMappedDefect(row);
+    if(!m.dong && !m.ho){ skippedMissingUnit++; return; }
+    var base = m.area === '공용부' ? siteMeta.useApprovalDate : m.moveIn;
+    var info = computeExpireInfo(base, m.yearClass, false, '');
+    var defect = {
+      files: [], createdAt: todayStr(),
+      dong: m.dong, ho: m.ho, area: m.area, moveInDate: m.moveIn || '',
+      yearClass: m.yearClass, basis: YEAR_CLASSES[m.yearClass].basis,
+      defectType: m.defectType || '미분류', severity: m.severity, foundDate: m.foundDate,
+      stage: 1, stageNote: '', description: m.description || '',
+      baseDate: base || '', normalExpireDate: info.normalExpire ? fmtDate(info.normalExpire) : '',
+      collapseFlag: false, collapseDate: '', collapseExpireDate: '',
+      expireDate: info.effective ? fmtDate(info.effective) : '',
+      updatedAt: todayStr()
+    };
+    jobs.push(idbPut('defects', defect).then(function(id){ defect.id = id; defects.push(defect); }));
+    imported++;
+  });
+  await Promise.all(jobs);
+  await saveImportMappingForReuse();
+  refreshDefectDependentViews();
+  writeBackupJson();
+  alert('가져오기 완료: ' + imported + '건 등록' + (skippedMissingUnit ? ', 동/호수 누락 ' + skippedMissingUnit + '건 건너뜀' : '') + '\n기산일이 없어 만료일이 계산되지 않은 항목은 목록에서 개별 수정해 주세요.');
 }
 
 /* ---------- 하자 첨부파일 미리보기(등록 전) ---------- */
@@ -1224,6 +1532,11 @@ async function init(){
   $('btnConnectFolder').addEventListener('click', connectFolder);
   $('btnDownloadTemplate').addEventListener('click', downloadTemplate);
   $('unitExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleUnitExcel(e.target.files[0]).then(function(){ e.target.value=''; }); });
+  $('defectExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0]).then(function(){ e.target.value=''; }); });
+  $('btnParsePaste').addEventListener('click', handleDefectPaste);
+  IMPORT_FIELD_DEFS.forEach(function(f){ $(mapSelId(f.key)).addEventListener('change', onImportMappingChange); });
+  ['defaultArea','defaultYearClass','defaultSeverity','defaultFoundDate'].forEach(function(id){ $(id).addEventListener('change', renderImportPreview); });
+  $('btnImportDefects').addEventListener('click', runDefectImport);
   $('btnAddUnitManual').addEventListener('click', function(){ $('unitAddForm').style.display = $('unitAddForm').style.display==='none'?'grid':'none'; });
   $('btnSaveUnitManual').addEventListener('click', function(){
     var dong = $('newUnitDong').value.trim(), ho = $('newUnitHo').value.trim();
