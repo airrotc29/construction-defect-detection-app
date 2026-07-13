@@ -162,10 +162,10 @@
       <span class="haza-note">또는 아래에 표를 붙여넣으세요</span>
     </div>
     <label class="haza-span2">표 붙여넣기(한글/PDF/Excel/웹 표 등에서 복사한 내용, 첫 줄은 열 제목)
-      <textarea id="defectPasteInput" rows="4" placeholder="여기에 Ctrl+V로 붙여넣으세요"></textarea>
+      <textarea id="defectPasteInput" rows="8" placeholder="여기에 Ctrl+V로 붙여넣으세요"></textarea>
     </label>
     <div class="haza-toolbar">
-      <label>구분자
+      <label>구분자(자동 인식이 잘 안 될 때만 변경)
         <select id="pasteDelim">
           <option value="auto">자동감지</option>
           <option value="tab">탭</option>
@@ -173,7 +173,6 @@
           <option value="space">공백(2칸 이상)</option>
         </select>
       </label>
-      <button type="button" id="btnParsePaste" class="haza-btn haza-btn--outline">붙여넣은 표 분석</button>
     </div>
     <span id="defectImportFileNote" class="haza-note"></span>
 
@@ -354,6 +353,7 @@
 .haza-grid input[type=text],.haza-grid input[type=date],.haza-grid select,.haza-grid textarea{
   font-weight:400;padding:.5rem .6rem;border:1px solid #cfd7e6;border-radius:7px;font-size:.92rem;font-family:inherit;
 }
+.haza-grid textarea{width:100%;box-sizing:border-box;text-align:left;resize:vertical;}
 .req{color:#c0392b;font-weight:400;font-size:.82em;}
 
 .haza-btn{display:inline-block;padding:.55em 1.1em;border-radius:8px;font-weight:700;font-size:.88rem;cursor:pointer;border:2px solid transparent;text-decoration:none;}
@@ -831,11 +831,20 @@ async function handleDefectExcel(file){
   await setImportData(Object.keys(rows[0]), rows, file.name + ' — ' + rows.length + '행 감지됨');
 }
 
+function debounce(fn, wait){
+  var t;
+  return function(){
+    var args = arguments;
+    clearTimeout(t);
+    t = setTimeout(function(){ fn.apply(null, args); }, wait);
+  };
+}
+
 async function handleDefectPaste(){
   var text = $('defectPasteInput').value;
-  if(!text.trim()){ alert('먼저 표 내용을 붙여넣으세요.'); return; }
+  if(!text.trim()){ $('defectImportFileNote').textContent=''; $('defectImportMappingArea').style.display='none'; return; }
   var parsed = parsePastedTable(text, $('pasteDelim').value);
-  if(!parsed || !parsed.rows.length){ alert('표를 인식하지 못했습니다. 구분자를 바꿔 다시 시도해 보세요.'); return; }
+  if(!parsed || !parsed.rows.length){ $('defectImportFileNote').textContent = '표를 인식하지 못했습니다. 구분자를 바꿔보세요.'; return; }
   await setImportData(parsed.headers, parsed.rows, '붙여넣기 — ' + parsed.rows.length + '행 인식됨');
 }
 
@@ -1529,7 +1538,8 @@ async function init(){
   $('btnDownloadTemplate').addEventListener('click', downloadTemplate);
   $('unitExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleUnitExcel(e.target.files[0]).then(function(){ e.target.value=''; }); });
   $('defectExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0]).then(function(){ e.target.value=''; }); });
-  $('btnParsePaste').addEventListener('click', handleDefectPaste);
+  $('defectPasteInput').addEventListener('input', debounce(handleDefectPaste, 400));
+  $('pasteDelim').addEventListener('change', handleDefectPaste);
   IMPORT_FIELD_DEFS.forEach(function(f){ $(mapSelId(f.key)).addEventListener('change', onImportMappingChange); });
   ['defaultArea','defaultYearClass','defaultSeverity','defaultFoundDate'].forEach(function(id){ $(id).addEventListener('change', renderImportPreview); });
   $('btnImportDefects').addEventListener('click', runDefectImport);
