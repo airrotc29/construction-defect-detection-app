@@ -38,7 +38,7 @@
 </blockquote>
 
 <details class="haza-info">
-  <summary>📋 연차별 하자담보책임 기준 안내 (클릭하여 접기/펼치기)</summary>
+  <summary>📋 연차별 하자담보책임 기준 안내 <span class="haza-blink">(펼치기)</span></summary>
 
   <table>
     <thead>
@@ -338,6 +338,8 @@
 <style>
 .haza-info{background:#f3f6fd;border:1px solid #d7e0f5;border-radius:10px;padding:1rem 1.2rem;margin:1.5rem 0;}
 .haza-info summary{cursor:pointer;font-weight:700;color:#16233c;}
+.haza-blink{color:#2148b8;animation:haza-blink 1.2s ease-in-out infinite;}
+@keyframes haza-blink{0%,100%{opacity:1;}50%{opacity:.25;}}
 .haza-info table{width:100%;border-collapse:collapse;margin:.9rem 0;font-size:.92rem;}
 .haza-info th,.haza-info td{border:1px solid #d7e0f5;padding:.5rem .6rem;text-align:left;}
 .haza-info th{background:#e7edfb;}
