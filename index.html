@@ -44,36 +44,49 @@
   <table>
     <thead>
       <tr>
-        <th>연차</th>
+        <th>존속기간</th>
         <th>하자 대상</th>
         <th>관련 근거</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td><strong>2년차</strong></td>
-        <td>타일, 실리콘, 페인트 등 마감공사 중심</td>
-        <td>집합건물법 시행령 제5조 제1항 제2호 다목</td>
+        <td><strong>2년</strong></td>
+        <td>마감공사의 하자 등 발견·교체 및 보수가 용이한 하자</td>
+        <td>시행령 제5조 제2호 다목</td>
       </tr>
       <tr>
-        <td><strong>3년차</strong></td>
-        <td>전기/전력설비, 냉난방 공조, 통신/소방설비, 창호, 조경 등</td>
-        <td>집합건물법 시행령 제5조 제1항 제2호 나목</td>
+        <td><strong>3년</strong></td>
+        <td>건축설비공사(전기·전화·초고속정보통신·지능형홈네트워크·가스·급수·배수·환기·난방·냉방·소화·배연·오물처리 설비 등, 건축법 제2조제1항제4호 및 유사 설비공사 포함), 목공사, 창호공사, 조경공사의 하자 등 기능상·미관상 하자</td>
+        <td>시행령 제5조 제2호 나목</td>
       </tr>
       <tr>
-        <td><strong>5년차</strong></td>
-        <td>대지조성, 철근콘크리트, 철골, 조적(組積), 지붕 및 방수공사 등 구조상·안전상 하자</td>
-        <td>집합건물법 시행령 제5조 제1항 제2호 가목</td>
+        <td><strong>5년</strong></td>
+        <td>대지조성공사, 철근콘크리트공사, 철골공사, 조적(組積)공사, 지붕 및 방수공사의 하자 등 구조상·안전상 하자</td>
+        <td>시행령 제5조 제2호 가목</td>
       </tr>
       <tr>
-        <td><strong>10년차</strong></td>
-        <td>기초, 기둥, 보, 지붕, 내력벽, 지반침하, 중대한 안전결함</td>
-        <td>집합건물법 제9조의2 제1항</td>
+        <td><strong>5년</strong></td>
+        <td>기산일 <strong>이전</strong>에 이미 발생한 하자(공정 중 발생 등 준공·인도 전 하자)</td>
+        <td>시행령 제5조 제1호</td>
+      </tr>
+      <tr>
+        <td><strong>10년</strong></td>
+        <td>주요구조부(내력벽·기둥·바닥·보·지붕틀·주계단, 건축법 제2조제1항제7호 — 사이기둥·최하층바닥·작은보·차양·옥외계단 등 구조상 중요하지 않은 부분 제외) 및 지반공사의 하자</td>
+        <td>집합건물법 제9조의2 제1항 제1호</td>
       </tr>
     </tbody>
   </table>
 
-  <p><strong>기산 기준</strong> — 전유부: 구분소유자 키불출일(입주일) / 공용부: 건물 사용승인일 (집합건물법 제9조의2)</p>
+  <p><strong>기산 기준</strong>(집합건물법 제9조의2 제2항) — 전유부분: 구분소유자에게 <strong>인도한 날</strong>(실무상 ‘키불출일’) /
+공용부분: 「주택법」 제49조에 따른 <strong>사용검사일</strong>(건물 전부에 대해 임시 사용승인을 받은 경우 그 임시사용승인일,
+분할 사용검사·동별 사용검사를 받은 경우 분할 사용검사일·동별 사용검사일) 또는 「건축법」 제22조에 따른
+<strong>사용승인일</strong></p>
+
+  <blockquote>
+    <p><strong>건물 멸실·훼손 시 특례</strong>(집합건물법 제9조의2 제3항): 위 하자로 인하여 건물이 멸실되거나 훼손된 경우에는
+통상의 존속기간과 관계없이 그 멸실·훼손된 날부터 <strong>1년 이내</strong>에 권리를 행사하여야 합니다.</p>
+  </blockquote>
 
   <p><strong>하자처리 절차 (6단계)</strong></p>
 
@@ -87,7 +100,7 @@
   </ol>
 
   <blockquote>
-    <p><strong>제척기간 도과 주의</strong>: 연차별 하자는 그 기간 내 명확한 권리행사(내용증명, 소송)를 하지 않으면 권리가
+    <p><strong>제척기간 도과 주의</strong>: 위 존속기간 내 명확한 권리행사(내용증명, 소송)를 하지 않으면 권리가
 소멸합니다. 아래 시스템은 항목별 만료예정일과 잔여일수(D-day)를 자동 계산해 표시합니다.</p>
   </blockquote>
 
@@ -98,7 +111,7 @@
     <h3>1. 현장 정보</h3>
     <div class="haza-grid">
       <label>단지명(현장명)<input type="text" id="metaComplexName" placeholder="예) OO아파트"></label>
-      <label>건물 사용승인일 <span class="req">(공용부 기산일)</span><input type="date" id="metaUseApprovalDate"></label>
+      <label>사용검사일/사용승인일 <span class="req">(공용부 기산일)</span><input type="date" id="metaUseApprovalDate"></label>
       <label>점검자<input type="text" id="metaInspector" placeholder="성명"></label>
       <label>점검일<input type="date" id="metaInspectionDate"></label>
     </div>
@@ -130,12 +143,12 @@
       <label>구분
         <select id="newUnitType"><option value="전유부">전유부</option><option value="공용부">공용부</option></select>
       </label>
-      <label>키불출일(입주일)<input type="date" id="newUnitMoveIn"></label>
+      <label>인도일(키불출일)<input type="date" id="newUnitMoveIn"></label>
       <button type="button" id="btnSaveUnitManual" class="haza-btn haza-btn--solid">추가</button>
     </div>
     <div class="haza-table-wrap">
       <table class="haza-table" id="unitsTable">
-        <thead><tr><th>동</th><th>호수/공용부명</th><th>구분</th><th>키불출일(입주일)</th><th>비고</th><th></th></tr></thead>
+        <thead><tr><th>동</th><th>호수/공용부명</th><th>구분</th><th>인도일(키불출일)</th><th>비고</th><th></th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -151,13 +164,14 @@
       <label>구분
         <select id="defArea"><option value="전유부">전유부</option><option value="공용부">공용부</option></select>
       </label>
-      <label id="defMoveInWrap">키불출일(입주일) <span class="req">(전유부 기산일)</span><input type="date" id="defMoveIn"></label>
-      <label>연차구분(하자담보책임)
+      <label id="defMoveInWrap">인도일(키불출일) <span class="req">(전유부 기산일)</span><input type="date" id="defMoveIn"></label>
+      <label>존속기간 구분(하자담보책임)
         <select id="defYearClass">
-          <option value="2">2년차 · 마감공사</option>
-          <option value="3">3년차 · 설비·창호·조경</option>
-          <option value="5">5년차 · 구조·방수</option>
-          <option value="10">10년차 · 주요구조부</option>
+          <option value="finish2">2년 · 마감공사</option>
+          <option value="functional3">3년 · 설비·목공사·창호·조경</option>
+          <option value="structural5">5년 · 구조·안전(대지조성/철콘/철골/조적/지붕/방수)</option>
+          <option value="pre5">5년 · 기산일 이전 발생 하자</option>
+          <option value="major10">10년 · 주요구조부·지반공사</option>
         </select>
       </label>
       <label>하자유형
@@ -178,6 +192,8 @@
           <option value="6">⑥ 소송 전환</option>
         </select>
       </label>
+      <label class="haza-checkbox haza-span2"><input type="checkbox" id="defCollapseFlag"> 이 하자로 건물이 멸실·훼손됨 (집합건물법 제9조의2 제3항 특례 적용)</label>
+      <label id="defCollapseDateWrap" style="display:none;">멸실·훼손일 <span class="req">(1년 특례 기산일)</span><input type="date" id="defCollapseDate"></label>
       <label class="haza-span2">진행 메모(사건번호, 내용증명 발송번호 등)<input type="text" id="defStageNote"></label>
       <label class="haza-span2">상세 설명<textarea id="defDescription" rows="2"></textarea></label>
       <label class="haza-span2">사진/동영상 첨부<input type="file" id="defFiles" accept="image/*,video/*" multiple disabled></label>
@@ -194,7 +210,14 @@
     <h3>5. 하자 목록</h3>
     <div class="haza-toolbar">
       <input type="text" id="filterUnit" placeholder="동/호수 검색">
-      <select id="filterYearClass"><option value="">전체 연차</option><option value="2">2년차</option><option value="3">3년차</option><option value="5">5년차</option><option value="10">10년차</option></select>
+      <select id="filterYearClass">
+        <option value="">전체 존속기간</option>
+        <option value="finish2">2년(마감)</option>
+        <option value="functional3">3년(설비·목공사·창호·조경)</option>
+        <option value="structural5">5년(구조·안전)</option>
+        <option value="pre5">5년(기산일 이전 발생)</option>
+        <option value="major10">10년(주요구조부·지반)</option>
+      </select>
       <select id="filterSeverity"><option value="">전체 심각도</option><option value="경미">경미</option><option value="보통">보통</option><option value="심각">심각</option></select>
       <label class="haza-checkbox"><input type="checkbox" id="filterUrgent"> 제척기간 임박(90일 이내)만</label>
     </div>
@@ -344,10 +367,11 @@
 'use strict';
 
 var YEAR_CLASSES = {
-  2:  { label:'2년차 · 마감공사',       basis:'집합건물법 시행령 제5조 제1항 제2호 다목', items:['타일 마감','실리콘/코킹','도장(페인트)','기타 마감공사'] },
-  3:  { label:'3년차 · 설비·창호·조경', basis:'집합건물법 시행령 제5조 제1항 제2호 나목', items:['전기·전력설비','냉난방 공조설비','통신·소방설비','창호','조경'] },
-  5:  { label:'5년차 · 구조·방수',       basis:'집합건물법 시행령 제5조 제1항 제2호 가목', items:['대지조성공사','철근콘크리트공사','철골공사','조적(組積)공사','지붕공사','방수공사'] },
-  10: { label:'10년차 · 주요구조부',    basis:'집합건물법 제9조의2 제1항',               items:['기초','기둥','보','지붕','내력벽','지반침하','중대한 안전결함'] }
+  finish2:      { years:2,  label:'2년 · 마감공사',                 basis:'집합건물법 시행령 제5조 제2호 다목', items:['타일공사','실리콘/코킹','도장(페인트)공사','도배공사','바닥재공사','기타 마감공사'] },
+  functional3:  { years:3,  label:'3년 · 설비·목공사·창호·조경',     basis:'집합건물법 시행령 제5조 제2호 나목', items:['전기·전화·통신·홈네트워크 설비','가스·급수·배수·환기·냉난방 설비','소화·배연·오물처리 설비','목공사','창호공사','조경공사'] },
+  structural5:  { years:5,  label:'5년 · 구조·안전',                 basis:'집합건물법 시행령 제5조 제2호 가목', items:['대지조성공사','철근콘크리트공사','철골공사','조적(組積)공사','지붕공사','방수공사'] },
+  pre5:         { years:5,  label:'5년 · 기산일 이전 발생 하자',     basis:'집합건물법 시행령 제5조 제1호',     items:[] },
+  major10:      { years:10, label:'10년 · 주요구조부·지반공사',      basis:'집합건물법 제9조의2 제1항 제1호',   items:['내력벽','기둥','바닥','보','지붕틀','주계단','지반공사(지반침하 등)'] }
 };
 var STAGES = [
   {n:1,label:'① 하자 접수·기록'},
@@ -547,19 +571,38 @@ function toggleMoveInVisibility(){
   $('defMoveInWrap').style.display = $('defArea').value === '공용부' ? 'none' : 'flex';
   updateDatePreview();
 }
+function toggleCollapseDateVisibility(){
+  $('defCollapseDateWrap').style.display = $('defCollapseFlag').checked ? 'flex' : 'none';
+  updateDatePreview();
+}
 function currentBaseDate(){
   return $('defArea').value === '공용부' ? siteMeta.useApprovalDate : $('defMoveIn').value;
+}
+function computeExpireInfo(base, yc, collapseFlag, collapseDate){
+  var years = YEAR_CLASSES[yc].years;
+  var normalExpire = base ? addYearsToDate(base, years) : null;
+  var collapseExpire = (collapseFlag && collapseDate) ? addYearsToDate(collapseDate, 1) : null;
+  var effective = normalExpire;
+  if(collapseExpire && (!effective || collapseExpire < effective)) effective = collapseExpire;
+  return { years:years, normalExpire:normalExpire, collapseExpire:collapseExpire, effective:effective };
 }
 function updateDatePreview(){
   var base = currentBaseDate();
   var yc = $('defYearClass').value;
+  var collapseFlag = $('defCollapseFlag').checked;
+  var collapseDate = $('defCollapseDate').value;
   var el = $('defDatePreview');
-  if(!base){ el.innerHTML = '<span class="haza-warn">기산일이 없어 제척기간을 계산할 수 없습니다. ' + ($('defArea').value==='공용부' ? '현장 정보에 사용승인일을 입력하세요.' : '키불출일을 입력하세요.') + '</span>'; return; }
-  var expire = addYearsToDate(base, yc);
-  var dday = daysUntil(expire);
+  if(!base && !(collapseFlag && collapseDate)){ el.innerHTML = '<span class="haza-warn">기산일이 없어 제척기간을 계산할 수 없습니다. ' + ($('defArea').value==='공용부' ? '현장 정보에 사용검사일/사용승인일을 입력하세요.' : '인도일(키불출일)을 입력하세요.') + '</span>'; return; }
+  var info = computeExpireInfo(base, yc, collapseFlag, collapseDate);
+  var dday = daysUntil(info.effective);
   var cls = dday < 0 ? 'badge-dday-danger' : (dday <= 90 ? 'badge-dday-warn' : 'badge-dday-ok');
   var ddayText = dday < 0 ? '제척기간 도과!' : ('D-' + dday);
-  el.innerHTML = '기산일 <b>'+escapeHtml(base)+'</b> → 제척기간(' + yc + '년) 만료예정일 <b>'+fmtDate(expire)+'</b> &nbsp; <span class="haza-badge '+cls+'">'+ddayText+'</span>';
+  var html = base ? ('기산일 <b>'+escapeHtml(base)+'</b> → 제척기간(' + info.years + '년) 만료예정일 <b>'+fmtDate(info.normalExpire)+'</b>') : '기산일 미입력';
+  if(info.collapseExpire){
+    html += '<br>멸실·훼손일 <b>'+escapeHtml(collapseDate)+'</b> → 1년 특례 만료예정일 <b>'+fmtDate(info.collapseExpire)+'</b>(집합건물법 제9조의2 제3항)';
+  }
+  html += ' &nbsp; <span class="haza-badge '+cls+'">'+ddayText+'</span> <span class="haza-note">(적용 만료일: '+fmtDate(info.effective)+')</span>';
+  el.innerHTML = html;
 }
 
 /* ---------- 동/호 매칭, datalist ---------- */
@@ -645,7 +688,7 @@ async function handleUnitExcel(file){
   var dongKey = findKey(rows[0], ['동']);
   var hoKey = findKey(rows[0], ['호수','호']);
   var typeKey = findKey(rows[0], ['구분']);
-  var moveInKey = findKey(rows[0], ['키불출','입주']);
+  var moveInKey = findKey(rows[0], ['키불출','입주','인도']);
   var noteKey = findKey(rows[0], ['비고']);
   var jobs = [];
   rows.forEach(function(row){
@@ -664,7 +707,7 @@ async function handleUnitExcel(file){
 }
 function downloadTemplate(){
   var wsData = [
-    ['동','호수','구분(전유부/공용부)','키불출일(입주일, 전유부만 YYYY-MM-DD)','비고'],
+    ['동','호수','구분(전유부/공용부)','인도일(키불출일, 전유부만 YYYY-MM-DD)','비고'],
     ['101','1001','전유부','2024-03-15',''],
     ['101','지하주차장','공용부','','']
   ];
@@ -707,11 +750,13 @@ async function saveDefect(ev){
   var moveIn = $('defMoveIn').value;
   var base = area === '공용부' ? siteMeta.useApprovalDate : moveIn;
   if(!base){
-    alert(area === '공용부' ? '현장 정보에 사용승인일을 먼저 입력하세요.' : '키불출일(입주일)을 입력하세요.');
+    alert(area === '공용부' ? '현장 정보에 사용검사일/사용승인일을 먼저 입력하세요.' : '인도일(키불출일)을 입력하세요.');
     return;
   }
-  var yc = Number($('defYearClass').value);
-  var expire = addYearsToDate(base, yc);
+  var yc = $('defYearClass').value;
+  var collapseFlag = $('defCollapseFlag').checked;
+  var collapseDate = $('defCollapseDate').value;
+  var info = computeExpireInfo(base, yc, collapseFlag, collapseDate);
   var typeSel = $('defTypeSelect').value;
   var defectType = typeSel === '__other__' ? $('defTypeOther').value.trim() : typeSel;
   var dong = $('defDong').value.trim(), ho = $('defHo').value.trim();
@@ -724,7 +769,10 @@ async function saveDefect(ev){
   defect.severity = $('defSeverity').value; defect.foundDate = $('defFoundDate').value || todayStr();
   defect.stage = Number($('defStage').value); defect.stageNote = $('defStageNote').value.trim();
   defect.description = $('defDescription').value.trim();
-  defect.baseDate = base; defect.expireDate = fmtDate(expire);
+  defect.baseDate = base; defect.normalExpireDate = fmtDate(info.normalExpire);
+  defect.collapseFlag = collapseFlag; defect.collapseDate = collapseDate || '';
+  defect.collapseExpireDate = info.collapseExpire ? fmtDate(info.collapseExpire) : '';
+  defect.expireDate = fmtDate(info.effective);
   defect.updatedAt = todayStr();
 
   var savedId = await idbPut('defects', defect);
@@ -752,6 +800,7 @@ async function saveDefect(ev){
   $('defFoundDate').value = todayStr();
   refreshDefectTypeOptions();
   toggleMoveInVisibility();
+  toggleCollapseDateVisibility();
   refreshDefectDependentViews();
   writeBackupJson();
 }
@@ -770,7 +819,8 @@ function loadDefectIntoForm(id){
   $('defSeverity').value = d.severity; $('defFoundDate').value = d.foundDate;
   $('defStage').value = d.stage; $('defStageNote').value = d.stageNote || '';
   $('defDescription').value = d.description || '';
-  toggleMoveInVisibility(); updateDatePreview();
+  $('defCollapseFlag').checked = !!d.collapseFlag; $('defCollapseDate').value = d.collapseDate || '';
+  toggleMoveInVisibility(); toggleCollapseDateVisibility(); updateDatePreview();
   $('btnCancelEdit').style.display = 'inline-block';
   window.scrollTo({top:document.getElementById('defectForm').getBoundingClientRect().top + window.scrollY - 80, behavior:'smooth'});
 }
@@ -873,6 +923,7 @@ function renderDefectsList(){
       '<div class="haza-defect-body">' +
         '<div><b>하자유형</b>: '+escapeHtml(d.defectType)+' &nbsp; <b>근거</b>: '+escapeHtml(d.basis)+'</div>' +
         '<div><b>기산일</b>: '+escapeHtml(d.baseDate)+' &nbsp; <b>만료예정일</b>: '+escapeHtml(d.expireDate)+' &nbsp; <b>발견일</b>: '+escapeHtml(d.foundDate)+'</div>' +
+        (d.collapseFlag ? '<div class="haza-warn">⚠ 건물 멸실·훼손 특례 적용 — 멸실·훼손일: '+escapeHtml(d.collapseDate)+', 1년 특례 만료일: '+escapeHtml(d.collapseExpireDate)+' (통상 만료일: '+escapeHtml(d.normalExpireDate)+', 집합건물법 제9조의2 제3항)</div>' : '') +
         (d.description ? '<div><b>설명</b>: '+escapeHtml(d.description)+'</div>' : '') +
         (d.stageNote ? '<div><b>진행메모</b>: '+escapeHtml(d.stageNote)+'</div>' : '') +
         (filesHtml ? '<div style="margin-top:.4rem;">'+filesHtml+'</div>' : '') +
@@ -938,6 +989,7 @@ function reportEntryHtml(d){
     '<div>하자유형: '+escapeHtml(d.defectType)+' &nbsp;|&nbsp; 근거: '+escapeHtml(d.basis)+'</div>' +
     '<div>기산일: '+escapeHtml(d.baseDate)+' &nbsp;|&nbsp; 제척기간 만료예정일: '+escapeHtml(d.expireDate)+' &nbsp;|&nbsp; 잔여: '+(dday<0?'도과':('D-'+dday))+'</div>' +
     '<div>발견일: '+escapeHtml(d.foundDate)+' &nbsp;|&nbsp; 처리단계: '+escapeHtml(STAGES[d.stage-1].label)+'</div>' +
+    (d.collapseFlag ? '<div>⚠ 건물 멸실·훼손 특례 적용 — 멸실·훼손일: '+escapeHtml(d.collapseDate)+', 1년 특례 만료일: '+escapeHtml(d.collapseExpireDate)+' (통상 만료일: '+escapeHtml(d.normalExpireDate)+', 집합건물법 제9조의2 제3항)</div>' : '') +
     (d.description ? '<div>설명: '+escapeHtml(d.description)+'</div>' : '') +
     (d.stageNote ? '<div>진행메모: '+escapeHtml(d.stageNote)+'</div>' : '') +
     (defectFiles.length ? '<div style="margin-top:.4rem;"><b>하자 사진/동영상</b><br>'+defectFiles.map(fileBlock).join('')+'</div>' : '') +
@@ -961,7 +1013,7 @@ function generateUnitReport(){
 function generateAggregateReport(){
   if(!defects.length){ alert('등록된 하자가 없습니다.'); return; }
   var bySeverity = {'경미':0,'보통':0,'심각':0};
-  var byYearClass = {2:0,3:0,5:0,10:0};
+  var byYearClass = {finish2:0,functional3:0,structural5:0,pre5:0,major10:0};
   var byStage = {1:0,2:0,3:0,4:0,5:0,6:0};
   defects.forEach(function(d){ bySeverity[d.severity]++; byYearClass[d.yearClass]++; byStage[d.stage]++; });
   var urgent = defects.filter(function(d){ return daysUntil(new Date(d.expireDate)) <= 90; })
@@ -973,7 +1025,7 @@ function generateAggregateReport(){
     '<div class="report-stat">제척기간 임박(90일 이내)<b>'+urgent.length+'건</b></div>' +
   '</div>';
 
-  var ycRows = [2,3,5,10].map(function(y){ return '<tr><td>'+YEAR_CLASSES[y].label+'</td><td>'+byYearClass[y]+'건</td></tr>'; }).join('');
+  var ycRows = ['finish2','functional3','structural5','pre5','major10'].map(function(y){ return '<tr><td>'+YEAR_CLASSES[y].label+'</td><td>'+byYearClass[y]+'건</td></tr>'; }).join('');
   var stageRows = STAGES.map(function(s){ return '<tr><td>'+s.label+'</td><td>'+byStage[s.n]+'건</td></tr>'; }).join('');
 
   var urgentRows = urgent.map(function(d){
@@ -988,7 +1040,7 @@ function generateAggregateReport(){
 
   var html = '<div class="report-page">' +
     '<h1>'+escapeHtml(siteMeta.complexName||'')+' 하자적출 전체 집계 보고서</h1>' +
-    '<div class="report-meta">점검자: '+escapeHtml(siteMeta.inspector||'-')+' / 점검일: '+escapeHtml(siteMeta.inspectionDate||'-')+' / 사용승인일: '+escapeHtml(siteMeta.useApprovalDate||'-')+' / 생성일: '+todayStr()+'</div>' +
+    '<div class="report-meta">점검자: '+escapeHtml(siteMeta.inspector||'-')+' / 점검일: '+escapeHtml(siteMeta.inspectionDate||'-')+' / 사용검사일/사용승인일: '+escapeHtml(siteMeta.useApprovalDate||'-')+' / 생성일: '+todayStr()+'</div>' +
     statHtml +
     '<h2>연차별 현황</h2><table class="report-table"><thead><tr><th>연차구분</th><th>건수</th></tr></thead><tbody>'+ycRows+'</tbody></table>' +
     '<h2>처리단계별 현황</h2><table class="report-table"><thead><tr><th>처리단계</th><th>건수</th></tr></thead><tbody>'+stageRows+'</tbody></table>' +
@@ -1006,6 +1058,7 @@ function exportDefectsExcel(){
       '동':d.dong,'호수':d.ho,'구분':d.area,'연차구분':YEAR_CLASSES[d.yearClass].label,'근거':d.basis,
       '하자유형':d.defectType,'심각도':d.severity,'발견일':d.foundDate,'기산일':d.baseDate,
       '제척기간만료일':d.expireDate,'잔여일수(D-day)':dday,'처리단계':STAGES[d.stage-1].label,
+      '멸실훼손특례':d.collapseFlag ? ('적용(멸실훼손일 '+d.collapseDate+', 통상만료일 '+d.normalExpireDate+')') : '',
       '진행메모':d.stageNote||'','설명':d.description||'',
       '하자사진수':(d.files||[]).filter(function(f){ return f.role !== 'repair'; }).length,
       '보수완료사진수':(d.files||[]).filter(function(f){ return f.role === 'repair'; }).length
@@ -1169,6 +1222,7 @@ async function init(){
   refreshDefectDependentViews();
   refreshDefectTypeOptions();
   toggleMoveInVisibility();
+  toggleCollapseDateVisibility();
   $('defFoundDate').value = todayStr();
   updateDatePreview();
 
@@ -1196,6 +1250,8 @@ async function init(){
   $('defHo').addEventListener('input', tryMatchUnit);
   $('defArea').addEventListener('change', toggleMoveInVisibility);
   $('defMoveIn').addEventListener('change', updateDatePreview);
+  $('defCollapseFlag').addEventListener('change', toggleCollapseDateVisibility);
+  $('defCollapseDate').addEventListener('change', updateDatePreview);
   $('defYearClass').addEventListener('change', function(){ refreshDefectTypeOptions(); updateDatePreview(); });
   $('defTypeSelect').addEventListener('change', toggleTypeOther);
   $('defFiles').addEventListener('change', function(e){ handleDefFilesChange(e.target.files); });
@@ -1203,7 +1259,7 @@ async function init(){
   $('btnCancelEdit').addEventListener('click', function(){
     editingDefectId = null; document.getElementById('defectForm').reset();
     pendingFiles=[]; $('defFilePreview').innerHTML=''; $('defFoundDate').value = todayStr();
-    refreshDefectTypeOptions(); toggleMoveInVisibility(); $('btnCancelEdit').style.display='none';
+    refreshDefectTypeOptions(); toggleMoveInVisibility(); toggleCollapseDateVisibility(); $('btnCancelEdit').style.display='none';
   });
 
   ['filterUnit'].forEach(function(id){ $(id).addEventListener('input', renderDefectsList); });
