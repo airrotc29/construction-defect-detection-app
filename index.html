@@ -112,7 +112,6 @@
     <div class="haza-grid">
       <label>단지명(현장명)<input type="text" id="metaComplexName" placeholder="예) OO아파트"></label>
       <label>사용검사일/사용승인일 <span class="req">(공용부 기산일)</span><input type="date" id="metaUseApprovalDate"></label>
-      <label>점검자<input type="text" id="metaInspector" placeholder="성명"></label>
       <label>점검일<input type="date" id="metaInspectionDate"></label>
     </div>
     <button type="button" id="btnSaveMeta" class="haza-btn haza-btn--solid">현장 정보 저장</button>
@@ -433,7 +432,7 @@ function idbDelete(store,key){ return dbPromise.then(function(db){ return reqToP
 function idbClear(store){ return dbPromise.then(function(db){ return reqToPromise(db.transaction(store,'readwrite').objectStore(store).clear()); }); }
 
 /* ---------- state ---------- */
-var siteMeta = { complexName:'', useApprovalDate:'', inspector:'', inspectionDate:'' };
+var siteMeta = { complexName:'', useApprovalDate:'', inspectionDate:'' };
 var noticeMeta = { constructorName:'', constructorAddress:'', unionName:'', unionAddress:'', unionRep:'', replyDays:14 };
 var units = [];
 var defects = [];
@@ -1004,7 +1003,7 @@ function generateUnitReport(){
   var list = defects.filter(function(d){ return d.dong === dong && d.ho === ho; });
   var html = '<div class="report-page">' +
     '<h1>'+escapeHtml(siteMeta.complexName||'')+' — '+escapeHtml(dong)+'동 '+escapeHtml(ho)+' 하자 상세 보고서</h1>' +
-    '<div class="report-meta">점검자: '+escapeHtml(siteMeta.inspector||'-')+' / 점검일: '+escapeHtml(siteMeta.inspectionDate||'-')+' / 생성일: '+todayStr()+' / 총 '+list.length+'건</div>' +
+    '<div class="report-meta">점검일: '+escapeHtml(siteMeta.inspectionDate||'-')+' / 생성일: '+todayStr()+' / 총 '+list.length+'건</div>' +
     list.map(reportEntryHtml).join('') +
   '</div>';
   printReport(html);
@@ -1040,7 +1039,7 @@ function generateAggregateReport(){
 
   var html = '<div class="report-page">' +
     '<h1>'+escapeHtml(siteMeta.complexName||'')+' 하자적출 전체 집계 보고서</h1>' +
-    '<div class="report-meta">점검자: '+escapeHtml(siteMeta.inspector||'-')+' / 점검일: '+escapeHtml(siteMeta.inspectionDate||'-')+' / 사용검사일/사용승인일: '+escapeHtml(siteMeta.useApprovalDate||'-')+' / 생성일: '+todayStr()+'</div>' +
+    '<div class="report-meta">점검일: '+escapeHtml(siteMeta.inspectionDate||'-')+' / 사용검사일/사용승인일: '+escapeHtml(siteMeta.useApprovalDate||'-')+' / 생성일: '+todayStr()+'</div>' +
     statHtml +
     '<h2>연차별 현황</h2><table class="report-table"><thead><tr><th>연차구분</th><th>건수</th></tr></thead><tbody>'+ycRows+'</tbody></table>' +
     '<h2>처리단계별 현황</h2><table class="report-table"><thead><tr><th>처리단계</th><th>건수</th></tr></thead><tbody>'+stageRows+'</tbody></table>' +
@@ -1182,7 +1181,7 @@ async function importBackup(file){
 async function resetAll(){
   if(!confirm('현장 정보, 호수 목록, 하자 기록을 모두 삭제합니다. (저장 폴더의 사진/동영상 파일은 삭제되지 않습니다) 계속할까요?')) return;
   await idbClear('units'); await idbClear('defects'); await idbClear('kv');
-  units = []; defects = []; siteMeta = {complexName:'',useApprovalDate:'',inspector:'',inspectionDate:''};
+  units = []; defects = []; siteMeta = {complexName:'',useApprovalDate:'',inspectionDate:''};
   noticeMeta = {constructorName:'',constructorAddress:'',unionName:'',unionAddress:'',unionRep:'',replyDays:14};
   rootHandle = null;
   loadMetaIntoForm(); loadNoticeMetaIntoForm(); renderUnitsTable(); refreshDefectDependentViews(); updateFolderStatusUI(false);
@@ -1192,13 +1191,11 @@ async function resetAll(){
 function loadMetaIntoForm(){
   $('metaComplexName').value = siteMeta.complexName||'';
   $('metaUseApprovalDate').value = siteMeta.useApprovalDate||'';
-  $('metaInspector').value = siteMeta.inspector||'';
   $('metaInspectionDate').value = siteMeta.inspectionDate||'';
 }
 function saveMeta(){
   siteMeta.complexName = $('metaComplexName').value.trim();
   siteMeta.useApprovalDate = $('metaUseApprovalDate').value;
-  siteMeta.inspector = $('metaInspector').value.trim();
   siteMeta.inspectionDate = $('metaInspectionDate').value;
   idbPut('kv', Object.assign({key:'siteMeta'}, siteMeta));
   $('metaSavedNote').textContent = '저장되었습니다.';
@@ -1209,7 +1206,7 @@ function saveMeta(){
 /* ---------- 초기화 ---------- */
 async function init(){
   var metaRow = await idbGet('kv', 'siteMeta');
-  if(metaRow){ siteMeta = {complexName:metaRow.complexName||'',useApprovalDate:metaRow.useApprovalDate||'',inspector:metaRow.inspector||'',inspectionDate:metaRow.inspectionDate||''}; }
+  if(metaRow){ siteMeta = {complexName:metaRow.complexName||'',useApprovalDate:metaRow.useApprovalDate||'',inspectionDate:metaRow.inspectionDate||''}; }
   loadMetaIntoForm();
 
   var noticeRow = await idbGet('kv', 'noticeMeta');
