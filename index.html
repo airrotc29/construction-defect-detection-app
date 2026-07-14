@@ -155,7 +155,7 @@
       <div class="haza-import-col">
         <h4>🏢 공용부분 등록</h4>
         <div class="haza-toolbar">
-          <label class="haza-file-btn">엑셀 업로드<input type="file" id="commonExcelInput" accept=".xlsx,.xls"></label>
+          <label class="haza-file-btn">① 엑셀 업로드<input type="file" id="commonExcelInput" accept=".xlsx,.xls"></label>
           <button type="button" id="btnDownloadTemplateCommon" class="haza-btn haza-btn--outline">📥 본사서식 다운받기</button>
         </div>
         <span id="commonDefectCount" class="haza-note"></span>
@@ -168,13 +168,13 @@
           <div class="haza-table-wrap">
             <table class="haza-table" id="commonImportPreviewTable"><thead></thead><tbody></tbody></table>
           </div>
-          <button type="button" id="btnImportCommon" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">가져오기</button>
+          <button type="button" id="btnImportCommon" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">② 가져오기</button>
         </div>
       </div>
       <div class="haza-import-col">
         <h4>🏠 전유부분 등록</h4>
         <div class="haza-toolbar">
-          <label class="haza-file-btn">엑셀 업로드<input type="file" id="unitDefectExcelInput" accept=".xlsx,.xls"></label>
+          <label class="haza-file-btn">① 엑셀 업로드<input type="file" id="unitDefectExcelInput" accept=".xlsx,.xls"></label>
           <button type="button" id="btnDownloadTemplateUnit" class="haza-btn haza-btn--outline">📥 본사서식 다운받기</button>
         </div>
         <span id="unitDefectCount" class="haza-note"></span>
@@ -187,14 +187,14 @@
           <div class="haza-table-wrap">
             <table class="haza-table" id="unitImportPreviewTable"><thead></thead><tbody></tbody></table>
           </div>
-          <button type="button" id="btnImportUnit" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">가져오기</button>
+          <button type="button" id="btnImportUnit" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">② 가져오기</button>
         </div>
       </div>
     </div>
     <div class="haza-grid" style="margin-top:1rem;">
       <label class="haza-span2">본사 참고보고 사항<textarea id="reportNote" rows="3" placeholder="본사에 함께 전달할 특이사항이 있으면 입력하세요"></textarea></label>
     </div>
-    <button type="button" id="btnReportProgress" class="haza-btn haza-btn--solid" style="margin-top:1rem;">본사로 보고하기</button>
+    <button type="button" id="btnReportProgress" class="haza-btn haza-btn--solid" style="margin-top:1rem;">③ 본사로 보고하기</button>
     <span id="reportProgressNote" class="haza-note"></span>
   </section>
 
@@ -511,7 +511,7 @@ function renderImportPreview(mode){
     return '<tr'+(skip ? ' style="color:#c0392b;"' : '')+'>' + cells + '</tr>';
   }).join('');
   document.querySelector('#'+ui.previewTable).innerHTML = '<thead>'+head+'</thead><tbody>'+rows+'</tbody>';
-  $(ui.importBtn).textContent = '전체 ' + st.rows.length + '건 가져오기';
+  $(ui.importBtn).textContent = '② 전체 ' + st.rows.length + '건 가져오기';
 }
 
 async function runDefectImport(mode){
