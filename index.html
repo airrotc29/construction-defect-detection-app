@@ -166,6 +166,13 @@
           <div class="haza-progress-bar"><div id="commonProgressFill" class="haza-progress-fill"></div></div>
           <span id="commonProgressLabel" class="haza-progress-label"></span>
         </div>
+        <div id="commonImportMappingArea" style="display:none; margin-top:1rem;">
+          <p class="haza-desc">미리보기(첫 5행) — 업로드한 파일의 원본 열입니다.</p>
+          <div class="haza-table-wrap">
+            <table class="haza-table" id="commonImportPreviewTable"><thead></thead><tbody></tbody></table>
+          </div>
+          <button type="button" id="btnImportCommon" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">가져오기</button>
+        </div>
       </div>
       <div class="haza-import-col">
         <h4>🏠 전유부분 등록</h4>
@@ -177,22 +184,22 @@
           <div class="haza-progress-bar"><div id="unitProgressFill" class="haza-progress-fill"></div></div>
           <span id="unitProgressLabel" class="haza-progress-label"></span>
         </div>
+        <div id="unitImportMappingArea" style="display:none; margin-top:1rem;">
+          <p class="haza-desc">미리보기(첫 5행) — 업로드한 파일의 원본 열입니다.</p>
+          <div class="haza-table-wrap">
+            <table class="haza-table" id="unitImportPreviewTable"><thead></thead><tbody></tbody></table>
+          </div>
+          <button type="button" id="btnImportUnit" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">가져오기</button>
+        </div>
       </div>
     </div>
     <button type="button" id="btnReportProgress" class="haza-btn haza-btn--solid" style="margin-top:1rem;">본사로 보고하기</button>
     <span id="reportProgressNote" class="haza-note"></span>
-
-    <div id="defectImportMappingArea" style="display:none; margin-top:1rem;">
-      <p class="haza-desc">미리보기(첫 5행) — 업로드한 파일의 원본 열입니다.</p>
-      <div class="haza-table-wrap">
-        <table class="haza-table" id="defectImportPreviewTable"><thead></thead><tbody></tbody></table>
-      </div>
-
-      <button type="button" id="btnImportDefects" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">가져오기</button>
-    </div>
   </section>
 
 </div>
+
+<div id="reportPrintArea" class="report-print-area"></div>
 
 <style>
 .haza-info{background:#f3f6fd;border:1px solid #d7e0f5;border-radius:10px;padding:1rem 1.2rem;margin:1.5rem 0;}
@@ -246,6 +253,23 @@
 .haza-table th,.haza-table td{border:1px solid #e3e8f2;padding:.5rem .55rem;text-align:left;white-space:nowrap;}
 .haza-table th{background:#f3f6fd;}
 .haza-table input[type=date]{border:1px solid #cfd7e6;border-radius:5px;padding:.2em .3em;font-size:.85rem;}
+
+.report-print-area{display:none;}
+@media print{
+  body.printing-report > *:not(#content){display:none !important;}
+  body.printing-report #content > *:not(.report-print-area){display:none !important;}
+  body.printing-report .report-print-area{display:block !important;}
+}
+.report-page{padding:1rem 0;font-family:inherit;color:#16233c;}
+.report-page h1{font-size:1.4rem;border-bottom:3px solid #16233c;padding-bottom:.4rem;}
+.report-page h2{font-size:1.1rem;margin-top:1.4rem;}
+.report-meta{color:#5a6577;font-size:.9rem;margin-bottom:1rem;}
+.report-table{width:100%;border-collapse:collapse;font-size:.8rem;margin:.6rem 0 1.2rem;}
+.report-table th,.report-table td{border:1px solid #ccc;padding:.35rem .5rem;text-align:left;}
+.report-table th{background:#eef1f7;}
+.report-stat-grid{display:flex;flex-wrap:wrap;gap:1rem;margin:.8rem 0;}
+.report-stat{border:1px solid #ccc;border-radius:8px;padding:.6rem 1rem;min-width:140px;}
+.report-stat b{display:block;font-size:1.2rem;}
 </style>
 
 <script src="assets/js/xlsx.core.min.js"></script>
@@ -316,13 +340,16 @@ var IMPORT_CANDIDATES = {
   completedDate: ['완료일','처리완료일','조치일'],
   description: ['설명','비고','상세']
 };
-var importRows = [];
-var importHeaders = [];
-var importDetectedCols = {};
-var importMode = '전유부';
-
-var importWorkbook = null;
-var importFileName = '';
+var AREA_UI = {
+  '공용부': { count:'commonDefectCount', chart:'commonProgressChart', fill:'commonProgressFill', label:'commonProgressLabel',
+              mappingArea:'commonImportMappingArea', previewTable:'commonImportPreviewTable', importBtn:'btnImportCommon' },
+  '전유부': { count:'unitDefectCount', chart:'unitProgressChart', fill:'unitProgressFill', label:'unitProgressLabel',
+              mappingArea:'unitImportMappingArea', previewTable:'unitImportPreviewTable', importBtn:'btnImportUnit' }
+};
+var importState = {
+  '공용부': { workbook:null, fileName:'', headers:[], rows:[], detectedCols:{} },
+  '전유부': { workbook:null, fileName:'', headers:[], rows:[], detectedCols:{} }
+};
 
 function guessDataSheetName(sheetNames, mode){
   var areaPattern = mode === '공용부' ? /공용/ : mode === '전유부' ? /전유|세대|호별/ : null;
@@ -371,38 +398,40 @@ function aoaToRows(aoa, headerIdx){
 }
 
 async function handleDefectExcel(file, mode){
-  importMode = mode;
+  var st = importState[mode];
   var buf = await file.arrayBuffer();
-  importWorkbook = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
-  importFileName = file.name;
-  await loadExcelSheet(guessDataSheetName(importWorkbook.SheetNames, mode));
+  st.workbook = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
+  st.fileName = file.name;
+  await loadExcelSheet(guessDataSheetName(st.workbook.SheetNames, mode), mode);
 }
 
-async function loadExcelSheet(sheetName){
-  var sheet = importWorkbook.Sheets[sheetName];
+async function loadExcelSheet(sheetName, mode){
+  var st = importState[mode];
+  var sheet = st.workbook.Sheets[sheetName];
   var aoa = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
   if(!aoa.length){
     alert('"'+sheetName+'" 시트에서 표 형태의 데이터를 찾지 못했습니다.');
-    $('defectImportMappingArea').style.display = 'none';
+    $(AREA_UI[mode].mappingArea).style.display = 'none';
     return;
   }
   var headerIdx = findHeaderRowIndex(aoa);
   var parsed = aoaToRows(aoa, headerIdx);
   if(!parsed.rows.length){
     alert('"'+sheetName+'" 시트에서 표 형태의 데이터를 찾지 못했습니다.');
-    $('defectImportMappingArea').style.display = 'none';
+    $(AREA_UI[mode].mappingArea).style.display = 'none';
     return;
   }
-  await setImportData(parsed.headers, parsed.rows);
+  setImportData(parsed.headers, parsed.rows, mode);
 }
 
-async function setImportData(headers, rows){
-  importHeaders = headers;
-  importRows = rows;
-  importDetectedCols = {};
-  Object.keys(IMPORT_CANDIDATES).forEach(function(key){ importDetectedCols[key] = findKey(rows[0], IMPORT_CANDIDATES[key]); });
-  $('defectImportMappingArea').style.display = 'block';
-  renderImportPreview();
+function setImportData(headers, rows, mode){
+  var st = importState[mode];
+  st.headers = headers;
+  st.rows = rows;
+  st.detectedCols = {};
+  Object.keys(IMPORT_CANDIDATES).forEach(function(key){ st.detectedCols[key] = findKey(rows[0], IMPORT_CANDIDATES[key]); });
+  $(AREA_UI[mode].mappingArea).style.display = 'block';
+  renderImportPreview(mode);
 }
 
 function guessSeverity(rawValue){
@@ -412,11 +441,12 @@ function guessSeverity(rawValue){
   return '보통';
 }
 
-function getMappedDefect(row){
-  var dongCol = importDetectedCols.dong, hoCol = importDetectedCols.ho;
-  var typeCol = importDetectedCols.defectType, sevCol = importDetectedCols.severity;
-  var foundCol = importDetectedCols.foundDate, descCol = importDetectedCols.description;
-  var completedCol = importDetectedCols.completedDate;
+function getMappedDefect(row, mode){
+  var st = importState[mode];
+  var dongCol = st.detectedCols.dong, hoCol = st.detectedCols.ho;
+  var typeCol = st.detectedCols.defectType, sevCol = st.detectedCols.severity;
+  var foundCol = st.detectedCols.foundDate, descCol = st.detectedCols.description;
+  var completedCol = st.detectedCols.completedDate;
   var severity = sevCol ? guessSeverity(row[sevCol]) : '보통';
   var foundDate = foundCol ? (normalizeExcelDate(row[foundCol]) || todayStr()) : todayStr();
   var defectType = typeCol ? String(row[typeCol]||'').trim() : '';
@@ -426,32 +456,34 @@ function getMappedDefect(row){
   return {
     dong: dongCol ? String(row[dongCol]||'').trim() : '',
     ho: hoCol ? String(row[hoCol]||'').trim() : '',
-    area: importMode, defectType: defectType, severity: severity,
+    area: mode, defectType: defectType, severity: severity,
     foundDate: foundDate, description: description || defectType, completed: completed
   };
 }
 
-function renderImportPreview(){
-  var head = '<tr>' + importHeaders.map(function(h){ return '<th>'+escapeHtml(h)+'</th>'; }).join('') + '</tr>';
-  var rows = importRows.slice(0, 5).map(function(row){
-    var m = getMappedDefect(row);
+function renderImportPreview(mode){
+  var st = importState[mode], ui = AREA_UI[mode];
+  var head = '<tr>' + st.headers.map(function(h){ return '<th>'+escapeHtml(h)+'</th>'; }).join('') + '</tr>';
+  var rows = st.rows.slice(0, 5).map(function(row){
+    var m = getMappedDefect(row, mode);
     var skip = !m.dong && !m.ho;
-    var cells = importHeaders.map(function(h){ return '<td>'+escapeHtml(row[h])+'</td>'; }).join('');
+    var cells = st.headers.map(function(h){ return '<td>'+escapeHtml(row[h])+'</td>'; }).join('');
     return '<tr'+(skip ? ' style="color:#c0392b;"' : '')+'>' + cells + '</tr>';
   }).join('');
-  document.querySelector('#defectImportPreviewTable').innerHTML = '<thead>'+head+'</thead><tbody>'+rows+'</tbody>';
-  $('btnImportDefects').textContent = '전체 ' + importRows.length + '건 가져오기';
+  document.querySelector('#'+ui.previewTable).innerHTML = '<thead>'+head+'</thead><tbody>'+rows+'</tbody>';
+  $(ui.importBtn).textContent = '전체 ' + st.rows.length + '건 가져오기';
 }
 
-async function runDefectImport(){
-  if(!importRows.length) return;
+async function runDefectImport(mode){
+  var st = importState[mode], ui = AREA_UI[mode];
+  if(!st.rows.length) return;
   var toSend = [], skippedMissingUnit = 0;
-  importRows.forEach(function(row){
-    var m = getMappedDefect(row);
+  st.rows.forEach(function(row){
+    var m = getMappedDefect(row, mode);
     if(!m.dong && !m.ho){ skippedMissingUnit++; return; }
     toSend.push(m);
   });
-  $('btnImportDefects').disabled = true;
+  $(ui.importBtn).disabled = true;
   try{
     var result = await apiFetch('/api/site/defects/import', { method:'POST', body:{ defects: toSend } });
     await refreshAreaStats();
@@ -459,14 +491,9 @@ async function runDefectImport(){
   } catch(e){
     alert('가져오기 실패: ' + e.message);
   } finally {
-    $('btnImportDefects').disabled = false;
+    $(ui.importBtn).disabled = false;
   }
 }
-
-var AREA_UI = {
-  '공용부': { count:'commonDefectCount', chart:'commonProgressChart', fill:'commonProgressFill', label:'commonProgressLabel' },
-  '전유부': { count:'unitDefectCount', chart:'unitProgressChart', fill:'unitProgressFill', label:'unitProgressLabel' }
-};
 
 async function refreshAreaStats(){
   try{
@@ -492,10 +519,41 @@ async function refreshAreaStats(){
   });
 }
 
+function printReport(html){
+  $('reportPrintArea').innerHTML = html;
+  document.body.classList.add('printing-report');
+  window.print();
+}
+window.addEventListener('afterprint', function(){ document.body.classList.remove('printing-report'); });
+
+function buildProgressReportHtml(){
+  var statCards = Object.keys(AREA_UI).map(function(area){
+    var areaDefects = defects.filter(function(d){ return d.area === area; });
+    var total = areaDefects.length;
+    var completed = areaDefects.filter(function(d){ return d.completed === true; }).length;
+    var rate = total > 0 ? Math.round(completed/total*100) : 0;
+    return '<div class="report-stat">'+escapeHtml(area)+'<b>'+total+'건</b>처리완료 '+completed+'건 ('+rate+'%)</div>';
+  }).join('');
+
+  var rows = defects.slice().sort(function(a,b){ return (a.area+a.dong+a.ho).localeCompare(b.area+b.dong+b.ho); }).map(function(d){
+    return '<tr><td>'+escapeHtml(d.area)+'</td><td>'+escapeHtml(d.dong)+'</td><td>'+escapeHtml(d.ho)+'</td><td>'+escapeHtml(d.defectType)+'</td>'+
+      '<td>'+escapeHtml(d.severity)+'</td><td>'+escapeHtml(d.foundDate)+'</td><td>'+(d.completed ? '완료' : '미완료')+'</td></tr>';
+  }).join('');
+
+  return '<div class="report-page">' +
+    '<h1>'+escapeHtml(siteMeta.complexName||'')+' 하자 처리 현황 보고서</h1>' +
+    '<div class="report-meta">생성일: '+todayStr()+' / 총 '+defects.length+'건</div>' +
+    '<div class="report-stat-grid">'+statCards+'</div>' +
+    '<h2>업로드 목록</h2>' +
+    '<table class="report-table"><thead><tr><th>구분</th><th>동</th><th>호수</th><th>하자유형</th><th>심각도</th><th>발견일</th><th>완료여부</th></tr></thead><tbody>'+rows+'</tbody></table>' +
+  '</div>';
+}
+
 async function reportProgress(){
   $('btnReportProgress').disabled = true;
   await refreshAreaStats();
   $('btnReportProgress').disabled = false;
+  if(defects.length) printReport(buildProgressReportHtml());
   $('reportProgressNote').textContent = '본사에 보고되었습니다.';
   setTimeout(function(){ $('reportProgressNote').textContent=''; }, 3000);
 }
@@ -610,7 +668,8 @@ async function init(){
   $('btnSaveMeta').addEventListener('click', saveMeta);
   $('commonExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '공용부').then(function(){ e.target.value=''; }); });
   $('unitDefectExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '전유부').then(function(){ e.target.value=''; }); });
-  $('btnImportDefects').addEventListener('click', runDefectImport);
+  $('btnImportCommon').addEventListener('click', function(){ runDefectImport('공용부'); });
+  $('btnImportUnit').addEventListener('click', function(){ runDefectImport('전유부'); });
   $('btnReportProgress').addEventListener('click', reportProgress);
 
   if(getSession()) await showLoggedInView();
