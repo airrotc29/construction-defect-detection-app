@@ -1,0 +1,16 @@
+name = "ace-tech-haza-api"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# 저장소 정보 (토큰이 아닌 값이라 여기 직접 적어도 됩니다)
+# 데이터는 Payment-order-manual이 아니라 별도의 construction-defect-detection-app
+# 저장소에 저장합니다 (Jekyll 문서 커밋과 실제 데이터 커밋을 분리하기 위함).
+[vars]
+GITHUB_OWNER = "airrotc29"
+GITHUB_REPO = "construction-defect-detection-app"
+DATA_BRANCH = "main"
+ALLOWED_ORIGIN = "https://airrotc29.github.io"
+
+# 아래 값들은 절대 여기(파일)에 적지 말고 `wrangler secret put` 명령으로만 등록하세요.
+#   GITHUB_TOKEN    - GitHub fine-grained PAT (이 저장소 Contents: Read/Write 권한만)
+#   SESSION_SECRET  - 로그인 세션 서명용 임의의 긴 문자열 (예: openssl rand -hex 32)

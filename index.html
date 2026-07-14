@@ -95,7 +95,47 @@
   </blockquote>
 
 </details>
-<div id="hazaApp" class="haza-app">
+<div id="loginScreen" class="haza-app">
+  <section class="haza-card haza-login-card">
+    <h3>로그인</h3>
+    <div class="haza-grid">
+      <label>아이디<input type="text" id="loginId" autocomplete="username"></label>
+      <label>비밀번호<input type="password" id="loginPw" autocomplete="current-password"></label>
+    </div>
+    <button type="button" id="btnLogin" class="haza-btn haza-btn--solid">로그인</button>
+    <span id="loginError" class="haza-warn"></span>
+    <p class="haza-desc">계정은 관리자가 발급합니다. 아이디/비밀번호를 모르면 관리자에게 문의하세요.</p>
+  </section>
+</div>
+
+<div id="adminPanel" class="haza-app" style="display:none;">
+  <section class="haza-card">
+    <div class="haza-toolbar" style="justify-content:space-between;">
+      <h3 style="margin:0;">관리자 — 사업소 계정 관리</h3>
+      <button type="button" id="btnLogoutAdmin" class="haza-btn haza-btn--outline">로그아웃</button>
+    </div>
+    <div class="haza-grid">
+      <label>사업소명<input type="text" id="newSiteName" placeholder="예) OO 지식산업센터"></label>
+      <label>아이디<input type="text" id="newUserId"></label>
+      <label>비밀번호<input type="password" id="newUserPw"></label>
+    </div>
+    <button type="button" id="btnCreateUser" class="haza-btn haza-btn--solid">계정 생성</button>
+    <span id="createUserNote" class="haza-note"></span>
+    <div class="haza-table-wrap" style="margin-top:1.2rem;">
+      <table class="haza-table" id="usersTable">
+        <thead><tr><th>사업소명</th><th>아이디</th><th>등록 하자 건수</th><th>생성일</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<div id="hazaApp" class="haza-app" style="display:none;">
+
+  <div class="haza-toolbar" style="justify-content:space-between;">
+    <span id="currentSiteName" class="haza-desc" style="margin:0;font-weight:700;"></span>
+    <button type="button" id="btnLogout" class="haza-btn haza-btn--outline">로그아웃</button>
+  </div>
 
   <section class="haza-card">
     <h3>1. 현장 정보</h3>
@@ -110,6 +150,7 @@
 
   <section class="haza-card">
     <h3>2. 엑셀/기존 파일에서 하자 일괄 등록</h3>
+    <span id="siteDefectCount" class="haza-note"></span>
     <p class="haza-desc">
       사업장마다 이미 만들어둔 하자 목록을 시스템 서식에 맞춰 다시 입력할 필요 없이 그대로 가져옵니다.
       <b>엑셀(.xlsx/.xls)</b>은 바로 업로드하고, <b>한글(HWP)·PDF·기타 문서</b>는 해당 프로그램에서 표를
@@ -174,6 +215,7 @@
 .haza-info th{background:#e7edfb;}
 
 .haza-app{margin-top:1.5rem;}
+.haza-login-card{max-width:420px;margin:0 auto;}
 .haza-card{background:#fff;border:1px solid #e3e8f2;border-radius:12px;padding:1.3rem 1.4rem;margin-bottom:1.4rem;box-shadow:0 2px 10px rgba(20,30,60,.04);}
 .haza-card h3{margin-top:0;}
 .haza-desc{color:#5a6577;font-size:.92rem;margin:.3rem 0 .8rem;}
@@ -240,28 +282,34 @@ function normalizeExcelDate(v){
   return '';
 }
 
-/* ---------- IndexedDB ---------- */
-var dbPromise = new Promise(function(resolve, reject){
-  var req = indexedDB.open('hazaDB', 1);
-  req.onupgradeneeded = function(e){
-    var db = e.target.result;
-    if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv', {keyPath:'key'});
-    if(!db.objectStoreNames.contains('units')) db.createObjectStore('units', {keyPath:'id', autoIncrement:true});
-    if(!db.objectStoreNames.contains('defects')) db.createObjectStore('defects', {keyPath:'id', autoIncrement:true});
-  };
-  req.onsuccess = function(){ resolve(req.result); };
-  req.onerror = function(){ reject(req.error); };
-});
-function reqToPromise(req){ return new Promise(function(resolve,reject){ req.onsuccess=function(){resolve(req.result);}; req.onerror=function(){reject(req.error);}; }); }
-function idbGetAll(store){ return dbPromise.then(function(db){ return reqToPromise(db.transaction(store,'readonly').objectStore(store).getAll()); }); }
-function idbGet(store,key){ return dbPromise.then(function(db){ return reqToPromise(db.transaction(store,'readonly').objectStore(store).get(key)); }); }
-function idbPut(store,val){ return dbPromise.then(function(db){ return reqToPromise(db.transaction(store,'readwrite').objectStore(store).put(val)); }); }
-function idbDelete(store,key){ return dbPromise.then(function(db){ return reqToPromise(db.transaction(store,'readwrite').objectStore(store).delete(key)); }); }
-function idbClear(store){ return dbPromise.then(function(db){ return reqToPromise(db.transaction(store,'readwrite').objectStore(store).clear()); }); }
+/* ---------- 백엔드(Cloudflare Worker) 연결 ---------- */
+/* server/README.md 안내대로 Worker를 배포한 뒤, 아래 주소를 실제 Worker URL로 바꾸세요. */
+var API_BASE = 'https://REPLACE_WITH_YOUR_WORKER_URL.workers.dev';
+var SESSION_KEY = 'hazaSession';
+
+function getSession(){
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch(e){ return null; }
+}
+function setSession(session){ localStorage.setItem(SESSION_KEY, JSON.stringify(session)); }
+function clearSession(){ localStorage.removeItem(SESSION_KEY); }
+
+async function apiFetch(path, opts){
+  opts = opts || {};
+  var session = getSession();
+  var headers = Object.assign({'Content-Type':'application/json'}, opts.headers||{});
+  if(session && session.token) headers['Authorization'] = 'Bearer ' + session.token;
+  var res = await fetch(API_BASE + path, {
+    method: opts.method || 'GET',
+    headers: headers,
+    body: opts.body ? JSON.stringify(opts.body) : undefined
+  });
+  var data = await res.json().catch(function(){ return {}; });
+  if(!res.ok) throw new Error(data.error || ('요청 실패 (' + res.status + ')'));
+  return data;
+}
 
 /* ---------- state ---------- */
 var siteMeta = { complexName:'', useApprovalDate:'', inspectionDate:'' };
-var units = [];
 var defects = [];
 
 function findKey(sampleRow, candidates){
@@ -408,27 +456,32 @@ function renderImportPreview(){
 
 async function runDefectImport(){
   if(!importRows.length) return;
-  var imported = 0, skippedMissingUnit = 0;
-  var jobs = [];
+  var toSend = [], skippedMissingUnit = 0;
   importRows.forEach(function(row){
     var m = getMappedDefect(row);
     if(!m.dong && !m.ho){ skippedMissingUnit++; return; }
-    var defect = {
-      files: [], createdAt: todayStr(),
-      dong: m.dong, ho: m.ho, area: m.area, moveInDate: '',
-      yearClass: '', basis: '',
-      defectType: m.defectType || '미분류', severity: m.severity, foundDate: m.foundDate,
-      stage: 1, stageNote: '', description: m.description || '',
-      baseDate: '', normalExpireDate: '',
-      collapseFlag: false, collapseDate: '', collapseExpireDate: '',
-      expireDate: '',
-      updatedAt: todayStr()
-    };
-    jobs.push(idbPut('defects', defect).then(function(id){ defect.id = id; defects.push(defect); }));
-    imported++;
+    toSend.push(m);
   });
-  await Promise.all(jobs);
-  alert('가져오기 완료: ' + imported + '건 등록' + (skippedMissingUnit ? ', 동/호수 누락 ' + skippedMissingUnit + '건 건너뜀' : '') + '\n존속기간(제척기간)은 계산되지 않았습니다.');
+  $('btnImportDefects').disabled = true;
+  try{
+    var result = await apiFetch('/api/site/defects/import', { method:'POST', body:{ defects: toSend } });
+    await refreshDefectCount();
+    alert('가져오기 완료: ' + result.imported + '건 등록' + (skippedMissingUnit ? ', 동/호수 누락 ' + skippedMissingUnit + '건 건너뜀' : '') + ' (사업소 전체 ' + result.total + '건)\n존속기간(제척기간)은 계산되지 않았습니다.');
+  } catch(e){
+    alert('가져오기 실패: ' + e.message);
+  } finally {
+    $('btnImportDefects').disabled = false;
+  }
+}
+
+async function refreshDefectCount(){
+  try{
+    var result = await apiFetch('/api/site/defects');
+    defects = result.defects;
+    $('siteDefectCount').textContent = '현재까지 등록된 하자: ' + defects.length + '건';
+  } catch(e){
+    $('siteDefectCount').textContent = '';
+  }
 }
 
 /* ---------- 현장정보 폼 ---------- */
@@ -437,22 +490,105 @@ function loadMetaIntoForm(){
   $('metaUseApprovalDate').value = siteMeta.useApprovalDate||'';
   $('metaInspectionDate').value = siteMeta.inspectionDate||'';
 }
-function saveMeta(){
+async function saveMeta(){
   siteMeta.complexName = $('metaComplexName').value.trim();
   siteMeta.useApprovalDate = $('metaUseApprovalDate').value;
   siteMeta.inspectionDate = $('metaInspectionDate').value;
-  idbPut('kv', Object.assign({key:'siteMeta'}, siteMeta));
-  $('metaSavedNote').textContent = '저장되었습니다.';
-  setTimeout(function(){ $('metaSavedNote').textContent=''; }, 2000);
+  try{
+    await apiFetch('/api/site/meta', { method:'POST', body: siteMeta });
+    $('metaSavedNote').textContent = '저장되었습니다.';
+  } catch(e){
+    $('metaSavedNote').textContent = '저장 실패: ' + e.message;
+  }
+  setTimeout(function(){ $('metaSavedNote').textContent=''; }, 3000);
+}
+
+/* ---------- 로그인/로그아웃 ---------- */
+async function login(){
+  var id = $('loginId').value.trim();
+  var password = $('loginPw').value;
+  $('loginError').textContent = '';
+  if(!id || !password){ $('loginError').textContent = '아이디와 비밀번호를 입력하세요.'; return; }
+  try{
+    var res = await fetch(API_BASE + '/api/login', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ id:id, password:password })
+    });
+    var data = await res.json().catch(function(){ return {}; });
+    if(!res.ok) throw new Error(data.error || '로그인에 실패했습니다.');
+    setSession({ token:data.token, role:data.role, siteId:data.siteId, siteName:data.siteName });
+    await showLoggedInView();
+  } catch(e){
+    $('loginError').textContent = e.message;
+  }
+}
+function logout(){
+  clearSession();
+  showLoginView();
+}
+
+/* ---------- 관리자 화면 ---------- */
+async function createUser(){
+  var siteName = $('newSiteName').value.trim();
+  var id = $('newUserId').value.trim();
+  var password = $('newUserPw').value;
+  if(!siteName || !id || !password){ $('createUserNote').textContent = '사업소명, 아이디, 비밀번호를 모두 입력하세요.'; return; }
+  try{
+    await apiFetch('/api/admin/users', { method:'POST', body:{ siteName:siteName, id:id, password:password } });
+    $('newSiteName').value=''; $('newUserId').value=''; $('newUserPw').value='';
+    $('createUserNote').textContent = '계정이 생성되었습니다.';
+    await refreshUsersTable();
+  } catch(e){
+    $('createUserNote').textContent = '생성 실패: ' + e.message;
+  }
+}
+async function refreshUsersTable(){
+  try{
+    var result = await apiFetch('/api/admin/users');
+    var rows = result.users.map(function(u){
+      return '<tr><td>'+escapeHtml(u.siteName)+'</td><td>'+escapeHtml(u.id)+'</td><td>'+u.defectCount+'건</td><td>'+escapeHtml((u.createdAt||'').slice(0,10))+'</td></tr>';
+    }).join('');
+    document.querySelector('#usersTable tbody').innerHTML = rows || '<tr><td colspan="4">등록된 사업소 계정이 없습니다.</td></tr>';
+  } catch(e){
+    document.querySelector('#usersTable tbody').innerHTML = '<tr><td colspan="4">불러오기 실패: '+escapeHtml(e.message)+'</td></tr>';
+  }
+}
+
+/* ---------- 화면 전환 ---------- */
+function showLoginView(){
+  $('loginScreen').style.display = 'block';
+  $('adminPanel').style.display = 'none';
+  $('hazaApp').style.display = 'none';
+  $('loginId').value = ''; $('loginPw').value = ''; $('loginError').textContent = '';
+}
+async function showLoggedInView(){
+  var session = getSession();
+  if(!session){ showLoginView(); return; }
+  $('loginScreen').style.display = 'none';
+  if(session.role === 'admin'){
+    $('adminPanel').style.display = 'block';
+    $('hazaApp').style.display = 'none';
+    await refreshUsersTable();
+  } else {
+    $('adminPanel').style.display = 'none';
+    $('hazaApp').style.display = 'block';
+    $('currentSiteName').textContent = session.siteName + ' 님으로 로그인됨';
+    try{
+      var metaResult = await apiFetch('/api/site/meta');
+      siteMeta = metaResult.meta;
+    } catch(e){ /* 조회 실패 시 빈 값 유지 */ }
+    loadMetaIntoForm();
+    await refreshDefectCount();
+  }
 }
 
 /* ---------- 초기화 ---------- */
 async function init(){
-  var metaRow = await idbGet('kv', 'siteMeta');
-  if(metaRow){ siteMeta = {complexName:metaRow.complexName||'',useApprovalDate:metaRow.useApprovalDate||'',inspectionDate:metaRow.inspectionDate||''}; }
-  loadMetaIntoForm();
-
-  defects = await idbGetAll('defects');
+  $('btnLogin').addEventListener('click', login);
+  $('loginPw').addEventListener('keydown', function(e){ if(e.key === 'Enter') login(); });
+  $('btnLogout').addEventListener('click', logout);
+  $('btnLogoutAdmin').addEventListener('click', logout);
+  $('btnCreateUser').addEventListener('click', createUser);
 
   $('btnSaveMeta').addEventListener('click', saveMeta);
   $('commonExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '공용부').then(function(){ e.target.value=''; }); });
@@ -465,6 +601,9 @@ async function init(){
     else if($('unitPasteInput').value.trim()) handleDefectPaste('전유부', 'unitPasteInput');
   });
   $('btnImportDefects').addEventListener('click', runDefectImport);
+
+  if(getSession()) await showLoggedInView();
+  else showLoginView();
 }
 
 document.addEventListener('DOMContentLoaded', init);
