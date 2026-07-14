@@ -333,6 +333,7 @@ function findKey(sampleRow, candidates){
 
 /* ---------- 하자 엑셀/붙여넣기 일괄 등록 (매핑 없이 자동 인식, 존속기간 계산 없음) ---------- */
 var IMPORT_CANDIDATES = {
+  seq: ['연번','순번'],
   dong: ['동'], ho: ['호수','호'],
   defectType: ['하자유형','하자내용','유형','내용'],
   severity: ['심각도','등급','중요도'],
@@ -443,21 +444,26 @@ function guessSeverity(rawValue){
 
 function getMappedDefect(row, mode){
   var st = importState[mode];
+  var seqCol = st.detectedCols.seq;
   var dongCol = st.detectedCols.dong, hoCol = st.detectedCols.ho;
   var typeCol = st.detectedCols.defectType, sevCol = st.detectedCols.severity;
   var foundCol = st.detectedCols.foundDate, descCol = st.detectedCols.description;
   var completedCol = st.detectedCols.completedDate;
+  var seq = seqCol ? String(row[seqCol]||'').trim() : '';
   var severity = sevCol ? guessSeverity(row[sevCol]) : '보통';
   var foundDate = foundCol ? (normalizeExcelDate(row[foundCol]) || todayStr()) : todayStr();
   var defectType = typeCol ? String(row[typeCol]||'').trim() : '';
   var description = descCol ? String(row[descCol]||'').trim() : '';
   var completed = completedCol ? !!String(row[completedCol]||'').trim() : false;
+  // 연번 열이 있으면 그 값의 존재 여부로 유효한 하자 행을 판단하고, 없으면 동/호수 존재로 판단한다
+  var valid = seqCol ? !!seq : !!(dongCol && String(row[dongCol]||'').trim()) || !!(hoCol && String(row[hoCol]||'').trim());
 
   return {
+    seq: seq,
     dong: dongCol ? String(row[dongCol]||'').trim() : '',
     ho: hoCol ? String(row[hoCol]||'').trim() : '',
     area: mode, defectType: defectType, severity: severity,
-    foundDate: foundDate, description: description || defectType, completed: completed
+    foundDate: foundDate, description: description || defectType, completed: completed, valid: valid
   };
 }
 
@@ -466,7 +472,7 @@ function renderImportPreview(mode){
   var head = '<tr>' + st.headers.map(function(h){ return '<th>'+escapeHtml(h)+'</th>'; }).join('') + '</tr>';
   var rows = st.rows.slice(0, 5).map(function(row){
     var m = getMappedDefect(row, mode);
-    var skip = !m.dong && !m.ho;
+    var skip = !m.valid;
     var cells = st.headers.map(function(h){ return '<td>'+escapeHtml(row[h])+'</td>'; }).join('');
     return '<tr'+(skip ? ' style="color:#c0392b;"' : '')+'>' + cells + '</tr>';
   }).join('');
@@ -477,17 +483,17 @@ function renderImportPreview(mode){
 async function runDefectImport(mode){
   var st = importState[mode], ui = AREA_UI[mode];
   if(!st.rows.length) return;
-  var toSend = [], skippedMissingUnit = 0;
+  var toSend = [], skippedInvalid = 0;
   st.rows.forEach(function(row){
     var m = getMappedDefect(row, mode);
-    if(!m.dong && !m.ho){ skippedMissingUnit++; return; }
+    if(!m.valid){ skippedInvalid++; return; }
     toSend.push(m);
   });
   $(ui.importBtn).disabled = true;
   try{
     var result = await apiFetch('/api/site/defects/import', { method:'POST', body:{ defects: toSend } });
     await refreshAreaStats();
-    alert('가져오기 완료: ' + result.imported + '건 등록' + (result.updated ? ', ' + result.updated + '건 갱신(완료여부/심각도)' : '') + (skippedMissingUnit ? ', 동/호수 누락 ' + skippedMissingUnit + '건 건너뜀' : '') + (result.duplicates ? ', 변경없음 ' + result.duplicates + '건' : '') + ' (사업소 전체 ' + result.total + '건)\n존속기간(제척기간)은 계산되지 않았습니다.');
+    alert('가져오기 완료: ' + result.imported + '건 등록' + (result.updated ? ', ' + result.updated + '건 갱신(완료여부/심각도)' : '') + (skippedInvalid ? ', 연번 없는 행 ' + skippedInvalid + '건 건너뜀' : '') + (result.duplicates ? ', 변경없음 ' + result.duplicates + '건' : '') + ' (사업소 전체 ' + result.total + '건)\n존속기간(제척기간)은 계산되지 않았습니다.');
   } catch(e){
     alert('가져오기 실패: ' + e.message);
   } finally {
