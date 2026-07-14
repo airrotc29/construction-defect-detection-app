@@ -335,11 +335,10 @@ async function handleImportDefects(env, request) {
 
   var r = await readJsonFile(env, 'data/sites/' + auth.siteId + '/defects.json');
   var existing = r.data || [];
-  var seenKeys = {};
-  existing.forEach(function (d) { seenKeys[defectDedupeKey(d)] = true; });
+  var indexByKey = {};
+  existing.forEach(function (d, idx) { indexByKey[defectDedupeKey(d)] = idx; });
   var nextId = existing.reduce(function (max, d) { return Math.max(max, d.id || 0); }, 0) + 1;
-  var added = [];
-  var duplicates = 0;
+  var addedCount = 0, updatedCount = 0, unchangedCount = 0;
   incoming.forEach(function (d) {
     var rec = {
       dong: String(d.dong || ''), ho: String(d.ho || ''), area: String(d.area || ''),
@@ -348,15 +347,27 @@ async function handleImportDefects(env, request) {
       completed: Boolean(d.completed),
     };
     var key = defectDedupeKey(rec);
-    if (seenKeys[key]) { duplicates++; return; }
-    seenKeys[key] = true;
+    if (key in indexByKey) {
+      // 이미 같은 하자가 있으면 새로 추가하지 않고, 완료 여부/심각도가 바뀌었으면 갱신만 한다
+      var existingRec = existing[indexByKey[key]];
+      if (existingRec.completed !== rec.completed || existingRec.severity !== rec.severity) {
+        existingRec.completed = rec.completed;
+        existingRec.severity = rec.severity;
+        existingRec.updatedAt = new Date().toISOString();
+        updatedCount++;
+      } else {
+        unchangedCount++;
+      }
+      return;
+    }
     rec.id = nextId++;
     rec.createdAt = new Date().toISOString();
-    added.push(rec);
+    existing.push(rec);
+    indexByKey[key] = existing.length - 1;
+    addedCount++;
   });
-  var updated = existing.concat(added);
-  await writeJsonFile(env, 'data/sites/' + auth.siteId + '/defects.json', updated, '하자 ' + added.length + '건 가져오기: ' + auth.siteId, r.sha);
-  return jsonResponse(env, { ok: true, imported: added.length, duplicates: duplicates, total: updated.length });
+  await writeJsonFile(env, 'data/sites/' + auth.siteId + '/defects.json', existing, '하자 ' + addedCount + '건 등록, ' + updatedCount + '건 갱신: ' + auth.siteId, r.sha);
+  return jsonResponse(env, { ok: true, imported: addedCount, updated: updatedCount, duplicates: unchangedCount, total: existing.length });
 }
 
 /* ---------- 진입점 ---------- */

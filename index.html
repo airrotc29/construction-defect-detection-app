@@ -487,7 +487,7 @@ async function runDefectImport(mode){
   try{
     var result = await apiFetch('/api/site/defects/import', { method:'POST', body:{ defects: toSend } });
     await refreshAreaStats();
-    alert('가져오기 완료: ' + result.imported + '건 등록' + (skippedMissingUnit ? ', 동/호수 누락 ' + skippedMissingUnit + '건 건너뜀' : '') + (result.duplicates ? ', 중복 ' + result.duplicates + '건 제외' : '') + ' (사업소 전체 ' + result.total + '건)\n존속기간(제척기간)은 계산되지 않았습니다.');
+    alert('가져오기 완료: ' + result.imported + '건 등록' + (result.updated ? ', ' + result.updated + '건 갱신(완료여부/심각도)' : '') + (skippedMissingUnit ? ', 동/호수 누락 ' + skippedMissingUnit + '건 건너뜀' : '') + (result.duplicates ? ', 변경없음 ' + result.duplicates + '건' : '') + ' (사업소 전체 ' + result.total + '건)\n존속기간(제척기간)은 계산되지 않았습니다.');
   } catch(e){
     alert('가져오기 실패: ' + e.message);
   } finally {
