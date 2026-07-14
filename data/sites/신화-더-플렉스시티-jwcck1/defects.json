@@ -2275,9 +2275,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "도어스토퍼 미설치",
-    "completed": true,
+    "completed": false,
     "id": 190,
-    "createdAt": "2026-07-14T05:03:48.406Z"
+    "createdAt": "2026-07-14T05:03:48.406Z",
+    "updatedAt": "2026-07-14T05:35:30.257Z"
   },
   {
     "dong": "",
@@ -2407,9 +2408,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "샷시 누수",
-    "completed": false,
+    "completed": true,
     "id": 201,
-    "createdAt": "2026-07-14T05:03:48.406Z"
+    "createdAt": "2026-07-14T05:03:48.406Z",
+    "updatedAt": "2026-07-14T05:35:30.257Z"
   },
   {
     "dong": "",
@@ -4519,9 +4521,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "벽체 퍼티 후 도장",
-    "completed": false,
+    "completed": true,
     "id": 377,
-    "createdAt": "2026-07-14T05:03:48.406Z"
+    "createdAt": "2026-07-14T05:03:48.406Z",
+    "updatedAt": "2026-07-14T05:35:30.257Z"
   },
   {
     "dong": "",
@@ -6403,9 +6406,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "벽체 마감면 불량",
-    "completed": true,
+    "completed": false,
     "id": 534,
-    "createdAt": "2026-07-14T05:03:48.406Z"
+    "createdAt": "2026-07-14T05:03:48.406Z",
+    "updatedAt": "2026-07-14T05:35:30.257Z"
   },
   {
     "dong": "",
@@ -8899,9 +8903,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "강마루 손상",
-    "completed": false,
+    "completed": true,
     "id": 742,
-    "createdAt": "2026-07-14T05:03:48.406Z"
+    "createdAt": "2026-07-14T05:03:48.406Z",
+    "updatedAt": "2026-07-14T05:35:30.257Z"
   },
   {
     "dong": "",
@@ -9475,9 +9480,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "강마루 손상",
-    "completed": false,
+    "completed": true,
     "id": 790,
-    "createdAt": "2026-07-14T05:03:48.406Z"
+    "createdAt": "2026-07-14T05:03:48.406Z",
+    "updatedAt": "2026-07-14T05:35:30.257Z"
   },
   {
     "dong": "",
