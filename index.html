@@ -157,17 +157,30 @@
       <b>한글(HWP)·PDF·기타 문서</b>는 해당 프로그램에서 표를 <b>블록 선택 → 복사(Ctrl+C)</b>한 뒤 아래
       붙여넣기 칸에 <b>붙여넣기(Ctrl+V)</b>하면 동일하게 처리됩니다.
     </p>
-    <div class="haza-toolbar">
-      <label class="haza-file-btn">엑셀 업로드<input type="file" id="defectExcelInput" accept=".xlsx,.xls"></label>
-      <span class="haza-note">또는 아래에 표를 붙여넣으세요</span>
+    <div class="haza-import-columns">
+      <div class="haza-import-col">
+        <h4>🏢 공용부분 등록</h4>
+        <div class="haza-toolbar">
+          <label class="haza-file-btn">엑셀 업로드<input type="file" id="commonExcelInput" accept=".xlsx,.xls"></label>
+        </div>
+        <label class="haza-paste-label">표 붙여넣기(첫 줄은 열 제목)
+          <textarea id="commonPasteInput" rows="6" placeholder="공용부분 하자 목록을 여기에 Ctrl+V로 붙여넣으세요"></textarea>
+        </label>
+      </div>
+      <div class="haza-import-col">
+        <h4>🏠 전유부분 등록</h4>
+        <div class="haza-toolbar">
+          <label class="haza-file-btn">엑셀 업로드<input type="file" id="unitDefectExcelInput" accept=".xlsx,.xls"></label>
+        </div>
+        <label class="haza-paste-label">표 붙여넣기(첫 줄은 열 제목)
+          <textarea id="unitPasteInput" rows="6" placeholder="전유부분 하자 목록을 여기에 Ctrl+V로 붙여넣으세요"></textarea>
+        </label>
+      </div>
     </div>
     <div class="haza-toolbar" id="defectExcelSheetWrap" style="display:none;">
       <label>가져올 시트 <select id="defectExcelSheet"></select></label>
       <span class="haza-note">엑셀에 시트가 여러 개면(표지·내역·사진대지 등) 실제 하자 목록이 있는 시트를 선택하세요. 시트별로 따로 가져와야 합니다.</span>
     </div>
-    <label class="haza-paste-label">표 붙여넣기(한글/PDF/Excel/웹 표 등에서 복사한 내용, 첫 줄은 열 제목)
-      <textarea id="defectPasteInput" rows="8" placeholder="여기에 Ctrl+V로 붙여넣으세요"></textarea>
-    </label>
     <div style="display:none;">
       <select id="pasteDelim">
         <option value="auto">자동감지</option>
@@ -179,16 +192,15 @@
     <span id="defectImportFileNote" class="haza-note"></span>
 
     <div id="defectImportMappingArea" style="display:none; margin-top:1rem;">
-      <p class="haza-desc">아래에서 시스템 항목별로 업로드한 파일의 어느 열을 사용할지 지정하세요. 매핑하지
-      않은 항목은 오른쪽의 기본값이 전체 행에 일괄 적용됩니다.</p>
+      <p class="haza-desc">가져오기 대상: <span id="importModeLabel" class="haza-badge badge-mild"></span> — 아래에서
+      시스템 항목별로 업로드한 파일의 어느 열을 사용할지 지정하세요. 매핑하지 않은 항목은 오른쪽의 기본값이
+      전체 행에 일괄 적용됩니다.</p>
       <div class="haza-table-wrap">
         <table class="haza-table">
           <thead><tr><th>시스템 항목</th><th>파일의 열(매핑)</th><th>매핑 안 할 경우 기본값</th></tr></thead>
           <tbody>
             <tr><td>동 <span class="req">(동/호수 중 최소 하나 필요)</span></td><td><select id="mapDong" class="import-map-col"></select></td><td>-</td></tr>
             <tr><td>호수/공용부명</td><td><select id="mapHo" class="import-map-col"></select></td><td>-</td></tr>
-            <tr><td>구분(전유부/공용부)</td><td><select id="mapArea" class="import-map-col"></select></td>
-              <td><select id="defaultArea"><option value="전유부">전유부</option><option value="공용부">공용부</option></select></td></tr>
             <tr><td>존속기간 구분 <span class="req">(필수)</span></td><td><select id="mapYearClass" class="import-map-col"></select></td>
               <td><select id="defaultYearClass">
                 <option value="finish2">2년·마감공사</option>
@@ -202,7 +214,7 @@
               <td><select id="defaultSeverity"><option value="경미">경미</option><option value="보통" selected>보통</option><option value="심각">심각</option></select></td></tr>
             <tr><td>발견일</td><td><select id="mapFoundDate" class="import-map-col"></select></td><td><input type="date" id="defaultFoundDate"></td></tr>
             <tr><td>설명/비고</td><td><select id="mapDescription" class="import-map-col"></select></td><td>-</td></tr>
-            <tr><td>인도일(전유부 기산일)</td><td><select id="mapMoveIn" class="import-map-col"></select></td><td>- (미매핑 시 개별 수정 필요)</td></tr>
+            <tr id="rowMapMoveIn"><td>인도일(전유부 기산일)</td><td><select id="mapMoveIn" class="import-map-col"></select></td><td>- (미매핑 시 개별 수정 필요)</td></tr>
           </tbody>
         </table>
       </div>
@@ -351,6 +363,10 @@
 .haza-desc{color:#5a6577;font-size:.92rem;margin:.3rem 0 .8rem;}
 .haza-paste-label{display:block;font-weight:600;font-size:.88rem;color:#33415c;margin-bottom:1rem;}
 .haza-paste-label textarea{display:block;width:100%;box-sizing:border-box;margin-top:.4rem;text-align:left;resize:vertical;font-family:inherit;font-size:.92rem;padding:.5rem .6rem;border:1px solid #cfd7e6;border-radius:7px;}
+.haza-import-columns{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.2rem;margin-bottom:1rem;}
+.haza-import-col{border:1px solid #e3e8f2;border-radius:10px;padding:1rem;background:#fafbfd;}
+.haza-import-col h4{margin:0 0 .6rem;color:#16233c;}
+.haza-import-col .haza-paste-label{margin-bottom:0;}
 .haza-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.9rem;margin-bottom:.9rem;}
 .haza-grid label{display:flex;flex-direction:column;gap:.35rem;font-size:.88rem;font-weight:600;color:#33415c;}
 .haza-span2{grid-column:1/-1;}
@@ -788,7 +804,6 @@ function downloadTemplate(){
 var IMPORT_FIELD_DEFS = [
   {key:'dong', label:'동', candidates:['동']},
   {key:'ho', label:'호수/공용부명', candidates:['호수','호']},
-  {key:'area', label:'구분(전유부/공용부)', candidates:['구분','전유','공용']},
   {key:'yearClass', label:'존속기간 구분', candidates:['연차','존속기간','기간구분','하자구분','하자분류','분류']},
   {key:'defectType', label:'하자유형/내용', candidates:['하자유형','하자내용','유형','내용']},
   {key:'severity', label:'심각도', candidates:['심각도','등급','중요도']},
@@ -799,6 +814,7 @@ var IMPORT_FIELD_DEFS = [
 var importRows = [];
 var importHeaders = [];
 var importValueMaps = {};
+var importMode = '전유부';
 
 function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
 function mapSelId(key){ return 'map' + capitalize(key); }
@@ -836,7 +852,8 @@ function guessDataSheetName(sheetNames){
   return avoided || sheetNames[0];
 }
 
-async function handleDefectExcel(file){
+async function handleDefectExcel(file, mode){
+  importMode = mode;
   var buf = await file.arrayBuffer();
   importWorkbook = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
   importFileName = file.name;
@@ -868,11 +885,12 @@ function debounce(fn, wait){
   };
 }
 
-async function handleDefectPaste(){
-  var text = $('defectPasteInput').value;
+async function handleDefectPaste(mode, textareaId){
+  var text = $(textareaId).value;
   if(!text.trim()){ $('defectImportFileNote').textContent=''; $('defectImportMappingArea').style.display='none'; return; }
+  importMode = mode;
   var parsed = parsePastedTable(text, $('pasteDelim').value);
-  if(!parsed || !parsed.rows.length){ $('defectImportFileNote').textContent = '표를 인식하지 못했습니다. 구분자를 바꿔보세요.'; return; }
+  if(!parsed || !parsed.rows.length){ $('defectImportFileNote').textContent = '표를 인식하지 못했습니다.'; return; }
   await setImportData(parsed.headers, parsed.rows, '붙여넣기 — ' + parsed.rows.length + '행 인식됨');
 }
 
@@ -882,6 +900,8 @@ async function setImportData(headers, rows, note){
   importValueMaps = {};
   $('defectImportFileNote').textContent = note;
   $('defectImportMappingArea').style.display = 'block';
+  $('importModeLabel').textContent = importMode;
+  $('rowMapMoveIn').style.display = importMode === '공용부' ? 'none' : '';
   renderImportColumnMappers();
   await tryLoadSavedMapping();
   onImportMappingChange();
@@ -911,7 +931,6 @@ function uniqueValues(rows, col, cap){
 
 function guessValueMap(fieldKey, rawValue){
   var v = String(rawValue||'');
-  if(fieldKey === 'area') return v.indexOf('공용') !== -1 ? '공용부' : '전유부';
   if(fieldKey === 'severity'){
     if(/심각|중대|긴급/.test(v)) return '심각';
     if(/경미|미세/.test(v)) return '경미';
@@ -930,12 +949,11 @@ function guessValueMap(fieldKey, rawValue){
 
 function renderValueMapUI(){
   var html = '';
-  ['area','yearClass','severity'].forEach(function(fieldKey){
+  ['yearClass','severity'].forEach(function(fieldKey){
     var col = $(mapSelId(fieldKey)).value;
     if(!col) return;
     var uniq = uniqueValues(importRows, col);
-    var targetOptions = fieldKey === 'area' ? [['전유부','전유부'],['공용부','공용부']]
-      : fieldKey === 'yearClass' ? ['finish2','functional3','structural5','pre5','major10'].map(function(k){ return [k, YEAR_CLASSES[k].label]; })
+    var targetOptions = fieldKey === 'yearClass' ? ['finish2','functional3','structural5','pre5','major10'].map(function(k){ return [k, YEAR_CLASSES[k].label]; })
       : [['경미','경미'],['보통','보통'],['심각','심각']];
     var fieldLabel = IMPORT_FIELD_DEFS.find(function(f){ return f.key === fieldKey; }).label;
     html += '<div class="haza-card" style="margin-top:.8rem;"><h4>"'+escapeHtml(fieldLabel)+'" 값 매핑 ('+escapeHtml(col)+' 열)</h4>';
@@ -963,37 +981,32 @@ function renderValueMapUI(){
 
 function getMappedDefect(row){
   var dongCol = $('mapDong').value, hoCol = $('mapHo').value;
-  var areaCol = $('mapArea').value, ycCol = $('mapYearClass').value;
+  var ycCol = $('mapYearClass').value;
   var typeCol = $('mapDefectType').value, sevCol = $('mapSeverity').value;
   var foundCol = $('mapFoundDate').value, descCol = $('mapDescription').value, moveInCol = $('mapMoveIn').value;
 
-  var area = areaCol ? ((importValueMaps.area && importValueMaps.area[String(row[areaCol]||'').trim()]) || $('defaultArea').value) : $('defaultArea').value;
   var yearClass = ycCol ? ((importValueMaps.yearClass && importValueMaps.yearClass[String(row[ycCol]||'').trim()]) || $('defaultYearClass').value) : $('defaultYearClass').value;
   var severity = sevCol ? ((importValueMaps.severity && importValueMaps.severity[String(row[sevCol]||'').trim()]) || $('defaultSeverity').value) : $('defaultSeverity').value;
   var foundDate = foundCol ? (normalizeExcelDate(row[foundCol]) || $('defaultFoundDate').value || todayStr()) : ($('defaultFoundDate').value || todayStr());
-  var moveIn = moveInCol ? normalizeExcelDate(row[moveInCol]) : '';
+  var moveIn = (importMode === '전유부' && moveInCol) ? normalizeExcelDate(row[moveInCol]) : '';
   var defectType = typeCol ? String(row[typeCol]||'').trim() : '';
   var description = descCol ? String(row[descCol]||'').trim() : '';
 
   return {
     dong: dongCol ? String(row[dongCol]||'').trim() : '',
     ho: hoCol ? String(row[hoCol]||'').trim() : '',
-    area: area, yearClass: yearClass, defectType: defectType, severity: severity,
+    area: importMode, yearClass: yearClass, defectType: defectType, severity: severity,
     foundDate: foundDate, description: description || defectType, moveIn: moveIn
   };
 }
 
 function renderImportPreview(){
-  var head = '<tr><th>동</th><th>호수</th><th>구분</th><th>존속기간</th><th>심각도</th><th>발견일</th><th>비고</th></tr>';
+  var head = '<tr>' + importHeaders.map(function(h){ return '<th>'+escapeHtml(h)+'</th>'; }).join('') + '</tr>';
   var rows = importRows.slice(0, 5).map(function(row){
     var m = getMappedDefect(row);
     var skip = !m.dong && !m.ho;
-    return '<tr'+(skip ? ' style="color:#c0392b;"' : '')+'>' +
-      '<td>'+escapeHtml(m.dong)+'</td><td>'+escapeHtml(m.ho)+'</td><td>'+escapeHtml(m.area)+'</td>' +
-      '<td>'+escapeHtml(YEAR_CLASSES[m.yearClass] ? YEAR_CLASSES[m.yearClass].label : m.yearClass)+'</td>' +
-      '<td>'+escapeHtml(m.severity)+'</td><td>'+escapeHtml(m.foundDate)+'</td>' +
-      '<td>'+(skip ? '동/호수 없음 — 건너뜀' : '')+'</td>' +
-    '</tr>';
+    var cells = importHeaders.map(function(h){ return '<td>'+escapeHtml(row[h])+'</td>'; }).join('');
+    return '<tr'+(skip ? ' style="color:#c0392b;"' : '')+'>' + cells + '</tr>';
   }).join('');
   document.querySelector('#defectImportPreviewTable').innerHTML = '<thead>'+head+'</thead><tbody>'+rows+'</tbody>';
   $('btnImportDefects').textContent = '전체 ' + importRows.length + '건 가져오기';
@@ -1010,11 +1023,11 @@ async function saveImportMappingForReuse(){
   var sig = headerSignature(importHeaders);
   var mapping = {};
   IMPORT_FIELD_DEFS.forEach(function(f){ mapping[f.key] = $(mapSelId(f.key)).value; });
-  await idbPut('kv', {key:'defectImportMapping:'+sig, mapping:mapping, valueMaps: importValueMaps});
+  await idbPut('kv', {key:'defectImportMapping:'+importMode+':'+sig, mapping:mapping, valueMaps: importValueMaps});
 }
 async function tryLoadSavedMapping(){
   var sig = headerSignature(importHeaders);
-  var saved = await idbGet('kv', 'defectImportMapping:' + sig);
+  var saved = await idbGet('kv', 'defectImportMapping:' + importMode + ':' + sig);
   if(saved){
     IMPORT_FIELD_DEFS.forEach(function(f){ if(saved.mapping[f.key] !== undefined) $(mapSelId(f.key)).value = saved.mapping[f.key]; });
     importValueMaps = saved.valueMaps || {};
@@ -1565,12 +1578,17 @@ async function init(){
   $('btnConnectFolder').addEventListener('click', connectFolder);
   $('btnDownloadTemplate').addEventListener('click', downloadTemplate);
   $('unitExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleUnitExcel(e.target.files[0]).then(function(){ e.target.value=''; }); });
-  $('defectExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0]).then(function(){ e.target.value=''; }); });
+  $('commonExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '공용부').then(function(){ e.target.value=''; }); });
+  $('unitDefectExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '전유부').then(function(){ e.target.value=''; }); });
   $('defectExcelSheet').addEventListener('change', function(e){ loadExcelSheet(e.target.value); });
-  $('defectPasteInput').addEventListener('input', debounce(handleDefectPaste, 400));
-  $('pasteDelim').addEventListener('change', handleDefectPaste);
+  $('commonPasteInput').addEventListener('input', debounce(function(){ handleDefectPaste('공용부', 'commonPasteInput'); }, 400));
+  $('unitPasteInput').addEventListener('input', debounce(function(){ handleDefectPaste('전유부', 'unitPasteInput'); }, 400));
+  $('pasteDelim').addEventListener('change', function(){
+    if($('commonPasteInput').value.trim()) handleDefectPaste('공용부', 'commonPasteInput');
+    else if($('unitPasteInput').value.trim()) handleDefectPaste('전유부', 'unitPasteInput');
+  });
   IMPORT_FIELD_DEFS.forEach(function(f){ $(mapSelId(f.key)).addEventListener('change', onImportMappingChange); });
-  ['defaultArea','defaultYearClass','defaultSeverity','defaultFoundDate'].forEach(function(id){ $(id).addEventListener('change', renderImportPreview); });
+  ['defaultYearClass','defaultSeverity','defaultFoundDate'].forEach(function(id){ $(id).addEventListener('change', renderImportPreview); });
   $('btnImportDefects').addEventListener('click', runDefectImport);
   $('btnAddUnitManual').addEventListener('click', function(){ $('unitAddForm').style.display = $('unitAddForm').style.display==='none'?'grid':'none'; });
   $('btnSaveUnitManual').addEventListener('click', function(){
