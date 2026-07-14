@@ -136,8 +136,19 @@ async function readJsonFile(env, path) {
   if (res.status === 404) return { data: null, sha: null };
   if (!res.ok) throw new Error('GitHub read failed (' + res.status + '): ' + path);
   var body = await res.json();
-  var content = bytesToUtf8(base64UrlToBytesFromStandardBase64(body.content));
-  return { data: JSON.parse(content), sha: body.sha };
+  var contentStr;
+  if (body.content) {
+    contentStr = bytesToUtf8(base64UrlToBytesFromStandardBase64(body.content));
+  } else {
+    // GitHub Contents API leaves `content` empty for files over 1MB — fall back to the raw media type
+    var rawRes = await fetch(githubApiUrl(env, path) + '?ref=' + (env.DATA_BRANCH || 'main'), {
+      headers: Object.assign({}, githubHeaders(env), { 'Accept': 'application/vnd.github.raw+json' }),
+    });
+    if (!rawRes.ok) throw new Error('GitHub raw read failed (' + rawRes.status + '): ' + path);
+    contentStr = await rawRes.text();
+  }
+  if (!contentStr) return { data: [], sha: body.sha };
+  return { data: JSON.parse(contentStr), sha: body.sha };
 }
 
 // GitHub returns standard base64 (with newlines), not base64url — decode accordingly
@@ -301,6 +312,11 @@ async function handleGetDefects(env, request, url) {
   return jsonResponse(env, { defects: r.data || [] });
 }
 
+function defectDedupeKey(d) {
+  return [d.area, d.dong, d.ho, d.defectType, d.description, d.foundDate]
+    .map(function (v) { return String(v || '').trim(); }).join('|');
+}
+
 async function handleImportDefects(env, request) {
   var auth = await requireAuth(env, request);
   if (!auth || auth.role !== 'user') return errorResponse(env, '사업소 계정만 사용할 수 있습니다.', 403);
@@ -310,20 +326,28 @@ async function handleImportDefects(env, request) {
 
   var r = await readJsonFile(env, 'data/sites/' + auth.siteId + '/defects.json');
   var existing = r.data || [];
+  var seenKeys = {};
+  existing.forEach(function (d) { seenKeys[defectDedupeKey(d)] = true; });
   var nextId = existing.reduce(function (max, d) { return Math.max(max, d.id || 0); }, 0) + 1;
-  var added = incoming.map(function (d) {
-    return {
-      id: nextId++,
+  var added = [];
+  var duplicates = 0;
+  incoming.forEach(function (d) {
+    var rec = {
       dong: String(d.dong || ''), ho: String(d.ho || ''), area: String(d.area || ''),
       defectType: String(d.defectType || '미분류'), severity: String(d.severity || '보통'),
       foundDate: String(d.foundDate || ''), description: String(d.description || ''),
       completed: Boolean(d.completed),
-      createdAt: new Date().toISOString(),
     };
+    var key = defectDedupeKey(rec);
+    if (seenKeys[key]) { duplicates++; return; }
+    seenKeys[key] = true;
+    rec.id = nextId++;
+    rec.createdAt = new Date().toISOString();
+    added.push(rec);
   });
   var updated = existing.concat(added);
   await writeJsonFile(env, 'data/sites/' + auth.siteId + '/defects.json', updated, '하자 ' + added.length + '건 가져오기: ' + auth.siteId, r.sha);
-  return jsonResponse(env, { ok: true, imported: added.length, total: updated.length });
+  return jsonResponse(env, { ok: true, imported: added.length, duplicates: duplicates, total: updated.length });
 }
 
 /* ---------- 진입점 ---------- */
