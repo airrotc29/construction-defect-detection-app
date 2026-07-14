@@ -123,7 +123,7 @@
     <span id="createUserNote" class="haza-note"></span>
     <div class="haza-table-wrap" style="margin-top:1.2rem;">
       <table class="haza-table" id="usersTable">
-        <thead><tr><th>사업소명</th><th>아이디</th><th>등록 하자 건수</th><th>생성일</th></tr></thead>
+        <thead><tr><th>사업소명</th><th>아이디</th><th>등록 하자 건수</th><th>처리완료</th><th>처리율</th><th>생성일</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -139,10 +139,12 @@
 
   <section class="haza-card">
     <h3>1. 현장 정보</h3>
+    <p class="haza-desc">처리완료 건수는 관리자 화면의 사업소별 처리 현황(건수·퍼센트)에 반영됩니다.</p>
     <div class="haza-grid">
       <label>단지명(현장명)<input type="text" id="metaComplexName" placeholder="예) OO 지식산업센터"></label>
       <label>사용검사일/사용승인일<input type="date" id="metaUseApprovalDate"></label>
       <label>점검일<input type="date" id="metaInspectionDate"></label>
+      <label>처리완료 건수<input type="number" id="metaCompletedCount" min="0" placeholder="0"></label>
     </div>
     <button type="button" id="btnSaveMeta" class="haza-btn haza-btn--solid">현장 정보 저장</button>
     <span id="metaSavedNote" class="haza-note"></span>
@@ -177,10 +179,6 @@
         </label>
       </div>
     </div>
-    <div class="haza-toolbar" id="defectExcelSheetWrap" style="display:none;">
-      <label>가져올 시트 <select id="defectExcelSheet"></select></label>
-      <span class="haza-note">엑셀에 시트가 여러 개면(표지·내역·사진대지 등) 실제 하자 목록이 있는 시트를 선택하세요. 시트별로 따로 가져와야 합니다.</span>
-    </div>
     <div style="display:none;">
       <select id="pasteDelim">
         <option value="auto">자동감지</option>
@@ -189,11 +187,8 @@
         <option value="space">공백(2칸 이상)</option>
       </select>
     </div>
-    <span id="defectImportFileNote" class="haza-note"></span>
 
     <div id="defectImportMappingArea" style="display:none; margin-top:1rem;">
-      <p class="haza-desc">가져오기 대상: <span id="importModeLabel" class="haza-badge badge-mild"></span></p>
-
       <p class="haza-desc">미리보기(첫 5행) — 업로드한 파일의 원본 열입니다.</p>
       <div class="haza-table-wrap">
         <table class="haza-table" id="defectImportPreviewTable"><thead></thead><tbody></tbody></table>
@@ -255,9 +250,6 @@
 .haza-table th,.haza-table td{border:1px solid #e3e8f2;padding:.5rem .55rem;text-align:left;white-space:nowrap;}
 .haza-table th{background:#f3f6fd;}
 .haza-table input[type=date]{border:1px solid #cfd7e6;border-radius:5px;padding:.2em .3em;font-size:.85rem;}
-
-.haza-badge{display:inline-block;padding:.2em .6em;border-radius:999px;font-size:.78rem;font-weight:700;}
-.badge-mild{background:#e7edfb;color:#2148b8;}
 </style>
 
 <script src="assets/js/xlsx.core.min.js"></script>
@@ -365,28 +357,62 @@ function guessDataSheetName(sheetNames){
   return avoided || sheetNames[0];
 }
 
+/* 엑셀에 "OO하자내역" 같은 제목 줄이 실제 열 제목 위에 있는 경우가 많아,
+   후보 키워드가 가장 많이 매칭되는 줄을 진짜 열 제목 줄로 판단한다. */
+function findHeaderRowIndex(aoa){
+  var allCandidates = [];
+  Object.keys(IMPORT_CANDIDATES).forEach(function(key){ allCandidates = allCandidates.concat(IMPORT_CANDIDATES[key]); });
+  var bestIdx = 0, bestScore = 0;
+  var scanLimit = Math.min(aoa.length, 15);
+  for(var i = 0; i < scanLimit; i++){
+    var score = 0;
+    (aoa[i] || []).forEach(function(cell){
+      var norm = String(cell==null?'':cell).replace(/\s/g,'');
+      if(!norm) return;
+      if(allCandidates.some(function(c){ return norm.indexOf(c) !== -1; })) score++;
+    });
+    if(score > bestScore){ bestScore = score; bestIdx = i; }
+  }
+  return bestIdx;
+}
+
+function aoaToRows(aoa, headerIdx){
+  var headerRow = aoa[headerIdx] || [];
+  var headers = headerRow.map(function(h, idx){ return String(h==null?'':h).trim() || ('열'+(idx+1)); });
+  var rows = aoa.slice(headerIdx+1).filter(function(r){
+    return (r||[]).some(function(c){ return String(c==null?'':c).trim() !== ''; });
+  }).map(function(r){
+    var obj = {};
+    headers.forEach(function(h, idx){ obj[h] = (r[idx] !== undefined && r[idx] !== null) ? r[idx] : ''; });
+    return obj;
+  });
+  return { headers: headers, rows: rows };
+}
+
 async function handleDefectExcel(file, mode){
   importMode = mode;
   var buf = await file.arrayBuffer();
   importWorkbook = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
   importFileName = file.name;
-  var sheetNames = importWorkbook.SheetNames;
-  var sheetSel = $('defectExcelSheet');
-  sheetSel.innerHTML = sheetNames.map(function(n){ return '<option value="'+escapeHtml(n)+'">'+escapeHtml(n)+'</option>'; }).join('');
-  $('defectExcelSheetWrap').style.display = sheetNames.length > 1 ? 'flex' : 'none';
-  sheetSel.value = guessDataSheetName(sheetNames);
-  await loadExcelSheet(sheetSel.value);
+  await loadExcelSheet(guessDataSheetName(importWorkbook.SheetNames));
 }
 
 async function loadExcelSheet(sheetName){
   var sheet = importWorkbook.Sheets[sheetName];
-  var rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
-  if(!rows.length){
-    $('defectImportFileNote').textContent = '"'+sheetName+'" 시트에서 표 형태의 데이터를 찾지 못했습니다. 다른 시트를 선택해 보세요.';
+  var aoa = XLSX.utils.sheet_to_json(sheet, {header:1, defval:''});
+  if(!aoa.length){
+    alert('"'+sheetName+'" 시트에서 표 형태의 데이터를 찾지 못했습니다.');
     $('defectImportMappingArea').style.display = 'none';
     return;
   }
-  await setImportData(Object.keys(rows[0]), rows, importFileName + ' — "' + sheetName + '" 시트 ' + rows.length + '행 감지됨');
+  var headerIdx = findHeaderRowIndex(aoa);
+  var parsed = aoaToRows(aoa, headerIdx);
+  if(!parsed.rows.length){
+    alert('"'+sheetName+'" 시트에서 표 형태의 데이터를 찾지 못했습니다.');
+    $('defectImportMappingArea').style.display = 'none';
+    return;
+  }
+  await setImportData(parsed.headers, parsed.rows);
 }
 
 function debounce(fn, wait){
@@ -400,21 +426,19 @@ function debounce(fn, wait){
 
 async function handleDefectPaste(mode, textareaId){
   var text = $(textareaId).value;
-  if(!text.trim()){ $('defectImportFileNote').textContent=''; $('defectImportMappingArea').style.display='none'; return; }
+  if(!text.trim()){ $('defectImportMappingArea').style.display='none'; return; }
   importMode = mode;
   var parsed = parsePastedTable(text, $('pasteDelim').value);
-  if(!parsed || !parsed.rows.length){ $('defectImportFileNote').textContent = '표를 인식하지 못했습니다.'; return; }
-  await setImportData(parsed.headers, parsed.rows, '붙여넣기 — ' + parsed.rows.length + '행 인식됨');
+  if(!parsed || !parsed.rows.length){ alert('표를 인식하지 못했습니다.'); return; }
+  await setImportData(parsed.headers, parsed.rows);
 }
 
-async function setImportData(headers, rows, note){
+async function setImportData(headers, rows){
   importHeaders = headers;
   importRows = rows;
   importDetectedCols = {};
   Object.keys(IMPORT_CANDIDATES).forEach(function(key){ importDetectedCols[key] = findKey(rows[0], IMPORT_CANDIDATES[key]); });
-  $('defectImportFileNote').textContent = note;
   $('defectImportMappingArea').style.display = 'block';
-  $('importModeLabel').textContent = importMode;
   renderImportPreview();
 }
 
@@ -478,7 +502,9 @@ async function refreshDefectCount(){
   try{
     var result = await apiFetch('/api/site/defects');
     defects = result.defects;
-    $('siteDefectCount').textContent = '현재까지 등록된 하자: ' + defects.length + '건';
+    var completed = Math.min(siteMeta.completedCount||0, defects.length);
+    var rateText = defects.length > 0 ? ' · 처리완료 ' + completed + '건 (' + Math.round(completed/defects.length*100) + '%)' : '';
+    $('siteDefectCount').textContent = '현재까지 등록된 하자: ' + defects.length + '건' + rateText;
   } catch(e){
     $('siteDefectCount').textContent = '';
   }
@@ -489,14 +515,17 @@ function loadMetaIntoForm(){
   $('metaComplexName').value = siteMeta.complexName||'';
   $('metaUseApprovalDate').value = siteMeta.useApprovalDate||'';
   $('metaInspectionDate').value = siteMeta.inspectionDate||'';
+  $('metaCompletedCount').value = siteMeta.completedCount||0;
 }
 async function saveMeta(){
   siteMeta.complexName = $('metaComplexName').value.trim();
   siteMeta.useApprovalDate = $('metaUseApprovalDate').value;
   siteMeta.inspectionDate = $('metaInspectionDate').value;
+  siteMeta.completedCount = Math.max(0, parseInt($('metaCompletedCount').value, 10) || 0);
   try{
     await apiFetch('/api/site/meta', { method:'POST', body: siteMeta });
     $('metaSavedNote').textContent = '저장되었습니다.';
+    await refreshDefectCount();
   } catch(e){
     $('metaSavedNote').textContent = '저장 실패: ' + e.message;
   }
@@ -546,11 +575,12 @@ async function refreshUsersTable(){
   try{
     var result = await apiFetch('/api/admin/users');
     var rows = result.users.map(function(u){
-      return '<tr><td>'+escapeHtml(u.siteName)+'</td><td>'+escapeHtml(u.id)+'</td><td>'+u.defectCount+'건</td><td>'+escapeHtml((u.createdAt||'').slice(0,10))+'</td></tr>';
+      var rateText = u.completionRate == null ? '-' : (u.completionRate + '%');
+      return '<tr><td>'+escapeHtml(u.siteName)+'</td><td>'+escapeHtml(u.id)+'</td><td>'+u.defectCount+'건</td><td>'+u.completedCount+'건</td><td>'+rateText+'</td><td>'+escapeHtml((u.createdAt||'').slice(0,10))+'</td></tr>';
     }).join('');
-    document.querySelector('#usersTable tbody').innerHTML = rows || '<tr><td colspan="4">등록된 사업소 계정이 없습니다.</td></tr>';
+    document.querySelector('#usersTable tbody').innerHTML = rows || '<tr><td colspan="6">등록된 사업소 계정이 없습니다.</td></tr>';
   } catch(e){
-    document.querySelector('#usersTable tbody').innerHTML = '<tr><td colspan="4">불러오기 실패: '+escapeHtml(e.message)+'</td></tr>';
+    document.querySelector('#usersTable tbody').innerHTML = '<tr><td colspan="6">불러오기 실패: '+escapeHtml(e.message)+'</td></tr>';
   }
 }
 
@@ -593,7 +623,6 @@ async function init(){
   $('btnSaveMeta').addEventListener('click', saveMeta);
   $('commonExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '공용부').then(function(){ e.target.value=''; }); });
   $('unitDefectExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '전유부').then(function(){ e.target.value=''; }); });
-  $('defectExcelSheet').addEventListener('change', function(e){ loadExcelSheet(e.target.value); });
   $('commonPasteInput').addEventListener('input', debounce(function(){ handleDefectPaste('공용부', 'commonPasteInput'); }, 400));
   $('unitPasteInput').addEventListener('input', debounce(function(){ handleDefectPaste('전유부', 'unitPasteInput'); }, 400));
   $('pasteDelim').addEventListener('change', function(){

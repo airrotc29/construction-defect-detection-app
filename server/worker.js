@@ -256,12 +256,18 @@ async function handleListUsers(env, request) {
   for (var i = 0; i < users.length; i++) {
     var u = users[i];
     if (u.role === 'admin') continue;
-    var defectCount = 0;
+    var defectCount = 0, completedCount = 0;
     try {
       var r = await readJsonFile(env, 'data/sites/' + u.siteId + '/defects.json');
       defectCount = (r.data || []).length;
     } catch (e) { /* ignore, show 0 */ }
-    list.push({ id: u.id, siteName: u.siteName, siteId: u.siteId, defectCount: defectCount, createdAt: u.createdAt });
+    try {
+      var m = await readJsonFile(env, 'data/sites/' + u.siteId + '/meta.json');
+      completedCount = (m.data && m.data.completedCount) || 0;
+    } catch (e) { /* ignore, show 0 */ }
+    if (completedCount > defectCount) completedCount = defectCount;
+    var completionRate = defectCount > 0 ? Math.round((completedCount / defectCount) * 100) : null;
+    list.push({ id: u.id, siteName: u.siteName, siteId: u.siteId, defectCount: defectCount, completedCount: completedCount, completionRate: completionRate, createdAt: u.createdAt });
   }
   return jsonResponse(env, { users: list });
 }
@@ -272,7 +278,7 @@ async function handleGetMeta(env, request, url) {
   var siteId = (auth.role === 'admin' ? url.searchParams.get('siteId') : auth.siteId);
   if (!siteId) return errorResponse(env, 'siteId가 필요합니다.', 400);
   var r = await readJsonFile(env, 'data/sites/' + siteId + '/meta.json');
-  return jsonResponse(env, { meta: r.data || { complexName: '', useApprovalDate: '', inspectionDate: '' } });
+  return jsonResponse(env, { meta: r.data || { complexName: '', useApprovalDate: '', inspectionDate: '', completedCount: 0 } });
 }
 
 async function handleSaveMeta(env, request) {
@@ -284,6 +290,7 @@ async function handleSaveMeta(env, request) {
     complexName: String(body.complexName || ''),
     useApprovalDate: String(body.useApprovalDate || ''),
     inspectionDate: String(body.inspectionDate || ''),
+    completedCount: Math.max(0, parseInt(body.completedCount, 10) || 0),
   };
   await writeJsonFile(env, 'data/sites/' + auth.siteId + '/meta.json', meta, '현장 정보 저장: ' + auth.siteId, r.sha);
   return jsonResponse(env, { ok: true });
