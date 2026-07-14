@@ -601,7 +601,7 @@ function buildProgressReportHtml(siteName, siteDefects, note){
 
   var rows = siteDefects.slice().sort(function(a,b){ return (a.area+a.dong+a.ho).localeCompare(b.area+b.dong+b.ho); }).map(function(d, idx){
     return '<tr><td>'+(idx+1)+'</td><td>'+escapeHtml(d.area)+'</td><td>'+escapeHtml(d.dong)+'</td><td>'+escapeHtml(d.ho)+'</td><td>'+escapeHtml(d.defectType)+'</td>'+
-      '<td>'+escapeHtml(d.severity)+'</td><td>'+escapeHtml(d.foundDate)+'</td><td>'+(d.completed ? '완료' : '미완료')+'</td></tr>';
+      '<td>'+escapeHtml(d.foundDate)+'</td><td>'+(d.completed ? '완료' : '미완료')+'</td></tr>';
   }).join('');
 
   return '<div class="report-page">' +
@@ -610,7 +610,7 @@ function buildProgressReportHtml(siteName, siteDefects, note){
     '<div class="report-stat-grid">'+statCards+'</div>' +
     (note ? '<h2>본사 참고보고 사항</h2><p class="report-meta" style="white-space:pre-wrap;">'+escapeHtml(note)+'</p>' : '') +
     '<h2>업로드 목록</h2>' +
-    '<table class="report-table"><thead><tr><th>순번</th><th>구분</th><th>동</th><th>호수</th><th>하자유형</th><th>심각도</th><th>발견일</th><th>완료여부</th></tr></thead><tbody>'+rows+'</tbody></table>' +
+    '<table class="report-table"><thead><tr><th>순번</th><th>구분</th><th>동</th><th>호수</th><th>하자유형</th><th>접수일</th><th>완료여부</th></tr></thead><tbody>'+rows+'</tbody></table>' +
   '</div>';
 }
 
