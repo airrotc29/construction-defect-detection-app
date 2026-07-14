@@ -161,6 +161,10 @@
       <label class="haza-file-btn">엑셀 업로드<input type="file" id="defectExcelInput" accept=".xlsx,.xls"></label>
       <span class="haza-note">또는 아래에 표를 붙여넣으세요</span>
     </div>
+    <div class="haza-toolbar" id="defectExcelSheetWrap" style="display:none;">
+      <label>가져올 시트 <select id="defectExcelSheet"></select></label>
+      <span class="haza-note">엑셀에 시트가 여러 개면(표지·내역·사진대지 등) 실제 하자 목록이 있는 시트를 선택하세요. 시트별로 따로 가져와야 합니다.</span>
+    </div>
     <label class="haza-paste-label">표 붙여넣기(한글/PDF/Excel/웹 표 등에서 복사한 내용, 첫 줄은 열 제목)
       <textarea id="defectPasteInput" rows="8" placeholder="여기에 Ctrl+V로 붙여넣으세요"></textarea>
     </label>
@@ -822,13 +826,37 @@ function parsePastedTable(text, delimMode){
   return { headers: headerCells, rows: rows };
 }
 
+var importWorkbook = null;
+var importFileName = '';
+
+function guessDataSheetName(sheetNames){
+  var preferred = sheetNames.find(function(n){ return /내역|목록|리스트|list/i.test(n); });
+  if(preferred) return preferred;
+  var avoided = sheetNames.find(function(n){ return !/표지|사진|대지|cover|photo/i.test(n); });
+  return avoided || sheetNames[0];
+}
+
 async function handleDefectExcel(file){
   var buf = await file.arrayBuffer();
-  var wb = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
-  var sheet = wb.Sheets[wb.SheetNames[0]];
+  importWorkbook = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
+  importFileName = file.name;
+  var sheetNames = importWorkbook.SheetNames;
+  var sheetSel = $('defectExcelSheet');
+  sheetSel.innerHTML = sheetNames.map(function(n){ return '<option value="'+escapeHtml(n)+'">'+escapeHtml(n)+'</option>'; }).join('');
+  $('defectExcelSheetWrap').style.display = sheetNames.length > 1 ? 'flex' : 'none';
+  sheetSel.value = guessDataSheetName(sheetNames);
+  await loadExcelSheet(sheetSel.value);
+}
+
+async function loadExcelSheet(sheetName){
+  var sheet = importWorkbook.Sheets[sheetName];
   var rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
-  if(!rows.length){ alert('엑셀에서 데이터를 찾을 수 없습니다.'); return; }
-  await setImportData(Object.keys(rows[0]), rows, file.name + ' — ' + rows.length + '행 감지됨');
+  if(!rows.length){
+    $('defectImportFileNote').textContent = '"'+sheetName+'" 시트에서 표 형태의 데이터를 찾지 못했습니다. 다른 시트를 선택해 보세요.';
+    $('defectImportMappingArea').style.display = 'none';
+    return;
+  }
+  await setImportData(Object.keys(rows[0]), rows, importFileName + ' — "' + sheetName + '" 시트 ' + rows.length + '행 감지됨');
 }
 
 function debounce(fn, wait){
@@ -1538,6 +1566,7 @@ async function init(){
   $('btnDownloadTemplate').addEventListener('click', downloadTemplate);
   $('unitExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleUnitExcel(e.target.files[0]).then(function(){ e.target.value=''; }); });
   $('defectExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0]).then(function(){ e.target.value=''; }); });
+  $('defectExcelSheet').addEventListener('change', function(e){ loadExcelSheet(e.target.value); });
   $('defectPasteInput').addEventListener('input', debounce(handleDefectPaste, 400));
   $('pasteDelim').addEventListener('change', handleDefectPaste);
   IMPORT_FIELD_DEFS.forEach(function(f){ $(mapSelId(f.key)).addEventListener('change', onImportMappingChange); });
