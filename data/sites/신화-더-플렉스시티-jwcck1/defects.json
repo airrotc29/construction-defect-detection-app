@@ -19151,5 +19151,17 @@
     "completed": false,
     "id": 1594,
     "createdAt": "2026-07-14T06:50:06.080Z"
+  },
+  {
+    "dong": "",
+    "ho": "2계단",
+    "area": "공용부",
+    "defectType": "층표시 아크릴 명판 누락",
+    "severity": "보통",
+    "foundDate": "2026-07-14",
+    "description": "미완료일 경우 완료일란을 비워주세요",
+    "completed": false,
+    "id": 1595,
+    "createdAt": "2026-07-14T06:51:07.897Z"
   }
 ]
