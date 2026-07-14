@@ -14311,9 +14311,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "도시가스 배관 천장 누수",
-    "completed": true,
+    "completed": false,
     "id": 1193,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -14611,9 +14612,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "바닥 스토퍼 고정 불량",
-    "completed": true,
+    "completed": false,
     "id": 1218,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -14623,9 +14625,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "바닥 스토퍼 고정 불량",
-    "completed": true,
+    "completed": false,
     "id": 1219,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -14635,9 +14638,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "바닥 스토퍼 고정 불량",
-    "completed": true,
+    "completed": false,
     "id": 1220,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -14647,9 +14651,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "바닥 스토퍼 고정 불량",
-    "completed": true,
+    "completed": false,
     "id": 1221,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -14731,9 +14736,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "페인트 자재 적치물",
-    "completed": true,
+    "completed": false,
     "id": 1228,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -14839,9 +14845,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "주차스토퍼 빗물 유입방지 커버 없음",
-    "completed": true,
+    "completed": false,
     "id": 1237,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -14851,9 +14858,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "주차스토퍼 고정 불량",
-    "completed": true,
+    "completed": false,
     "id": 1238,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -14935,9 +14943,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "우측끝 수전센서불량",
-    "completed": true,
+    "completed": false,
     "id": 1245,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -15151,9 +15160,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "천정 아스콘 방수액 확인",
-    "completed": true,
+    "completed": false,
     "id": 1263,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -15223,9 +15233,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "스토퍼 밀림현상",
-    "completed": true,
+    "completed": false,
     "id": 1269,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -15429,7 +15440,8 @@
     "description": "번호키 입력 후 문 안열림",
     "completed": false,
     "id": 1286,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -15439,9 +15451,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "1009호 사인몰 인쇄 잘못됨(1019호 표시됨)",
-    "completed": true,
+    "completed": false,
     "id": 1287,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -16543,9 +16556,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "옥상1~2층 센서등 작동 상태 불량",
-    "completed": false,
+    "completed": true,
     "id": 1379,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -16579,9 +16593,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "(9~10F 사이) 벽체 누수",
-    "completed": true,
+    "completed": false,
     "id": 1382,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -16771,9 +16786,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "광덕트 누수",
-    "completed": true,
+    "completed": false,
     "id": 1398,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -17035,9 +17051,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "표시등 하부 타일 균열",
-    "completed": true,
+    "completed": false,
     "id": 1420,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -17047,9 +17064,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "7~18층 세대호실명판 표기 위치확인",
-    "completed": false,
+    "completed": true,
     "id": 1421,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
@@ -17083,9 +17101,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "점검구 단차불량",
-    "completed": false,
+    "completed": true,
     "id": 1424,
-    "createdAt": "2026-07-14T05:09:56.990Z"
+    "createdAt": "2026-07-14T05:09:56.990Z",
+    "updatedAt": "2026-07-14T05:28:36.392Z"
   },
   {
     "dong": "",
