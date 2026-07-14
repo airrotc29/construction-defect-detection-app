@@ -547,11 +547,12 @@ async function runDefectImport(mode){
     if(!m.valid){ skippedInvalid++; return; }
     toSend.push(m);
   });
+  if(!confirm('기존 '+mode+' 데이터는 모두 삭제되고 이번에 업로드한 파일 내용으로 교체됩니다. 계속하시겠습니까?')) return;
   $(ui.importBtn).disabled = true;
   try{
-    var result = await apiFetch('/api/site/defects/import', { method:'POST', body:{ defects: toSend } });
+    var result = await apiFetch('/api/site/defects/import', { method:'POST', body:{ area: mode, defects: toSend } });
     await refreshAreaStats();
-    alert('가져오기 완료: ' + result.imported + '건 등록' + (result.updated ? ', ' + result.updated + '건 갱신(완료여부/심각도)' : '') + (skippedInvalid ? ', 연번 없는 행 ' + skippedInvalid + '건 건너뜀' : '') + (result.duplicates ? ', 변경없음 ' + result.duplicates + '건' : '') + ' (사업소 전체 ' + result.total + '건)\n존속기간(제척기간)은 계산되지 않았습니다.');
+    alert('가져오기 완료: ' + result.imported + '건으로 교체되었습니다' + (result.removed ? ' (기존 ' + result.removed + '건 삭제)' : '') + (skippedInvalid ? ', 연번 없는 행 ' + skippedInvalid + '건 건너뜀' : '') + ' (사업소 전체 ' + result.total + '건)\n존속기간(제척기간)은 계산되지 않았습니다.');
   } catch(e){
     alert('가져오기 실패: ' + e.message);
   } finally {

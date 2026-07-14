@@ -345,53 +345,35 @@ async function handleGetDefects(env, request, url) {
   return jsonResponse(env, { defects: r.data || [] });
 }
 
-function defectDedupeKey(d) {
-  return [d.area, d.dong, d.ho, d.defectType, d.description, d.foundDate]
-    .map(function (v) { return String(v || '').trim(); }).join('|');
-}
-
+// 엑셀을 다시 업로드하면 해당 구분(공용부/전유부)의 기존 데이터는 모두 지우고
+// 이번에 업로드한 내용으로 완전히 교체한다 (다른 구분의 데이터는 그대로 둔다)
 async function handleImportDefects(env, request) {
   var auth = await requireAuth(env, request);
   if (!auth || auth.role !== 'user') return errorResponse(env, '사업소 계정만 사용할 수 있습니다.', 403);
   var body = await request.json().catch(function () { return {}; });
   var incoming = Array.isArray(body.defects) ? body.defects : [];
   if (!incoming.length) return errorResponse(env, '가져올 하자 목록이 없습니다.', 400);
+  var area = String(body.area || incoming[0].area || '');
+  if (!area) return errorResponse(env, 'area 값이 없습니다.', 400);
 
   var r = await readJsonFile(env, 'data/sites/' + auth.siteId + '/defects.json');
   var existing = r.data || [];
-  var indexByKey = {};
-  existing.forEach(function (d, idx) { indexByKey[defectDedupeKey(d)] = idx; });
+  var kept = existing.filter(function (d) { return d.area !== area; });
+  var removedCount = existing.length - kept.length;
   var nextId = existing.reduce(function (max, d) { return Math.max(max, d.id || 0); }, 0) + 1;
-  var addedCount = 0, updatedCount = 0, unchangedCount = 0;
-  incoming.forEach(function (d) {
-    var rec = {
-      dong: String(d.dong || ''), ho: String(d.ho || ''), area: String(d.area || ''),
+  var replaced = incoming.map(function (d) {
+    return {
+      id: nextId++,
+      dong: String(d.dong || ''), ho: String(d.ho || ''), area: area,
       defectType: String(d.defectType || '미분류'), severity: String(d.severity || '보통'),
       foundDate: String(d.foundDate || ''), description: String(d.description || ''),
       completed: Boolean(d.completed),
+      createdAt: new Date().toISOString(),
     };
-    var key = defectDedupeKey(rec);
-    if (key in indexByKey) {
-      // 이미 같은 하자가 있으면 새로 추가하지 않고, 완료 여부/심각도가 바뀌었으면 갱신만 한다
-      var existingRec = existing[indexByKey[key]];
-      if (existingRec.completed !== rec.completed || existingRec.severity !== rec.severity) {
-        existingRec.completed = rec.completed;
-        existingRec.severity = rec.severity;
-        existingRec.updatedAt = new Date().toISOString();
-        updatedCount++;
-      } else {
-        unchangedCount++;
-      }
-      return;
-    }
-    rec.id = nextId++;
-    rec.createdAt = new Date().toISOString();
-    existing.push(rec);
-    indexByKey[key] = existing.length - 1;
-    addedCount++;
   });
-  await writeJsonFile(env, 'data/sites/' + auth.siteId + '/defects.json', existing, '하자 ' + addedCount + '건 등록, ' + updatedCount + '건 갱신: ' + auth.siteId, r.sha);
-  return jsonResponse(env, { ok: true, imported: addedCount, updated: updatedCount, duplicates: unchangedCount, total: existing.length });
+  var finalList = kept.concat(replaced);
+  await writeJsonFile(env, 'data/sites/' + auth.siteId + '/defects.json', finalList, '하자 ' + replaced.length + '건으로 교체(' + area + '): ' + auth.siteId, r.sha);
+  return jsonResponse(env, { ok: true, imported: replaced.length, removed: removedCount, total: finalList.length });
 }
 
 function templateAreaKey(area) {
