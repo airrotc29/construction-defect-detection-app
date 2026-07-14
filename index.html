@@ -153,7 +153,7 @@
     <p class="haza-desc">
       사업장마다 이미 만들어둔 하자 목록(<b>엑셀 .xlsx/.xls</b>)을 시스템 서식에 맞춰 다시 입력할 필요 없이
       그대로 업로드해 가져옵니다. 동/호수 열은 자동으로 인식하며, 존속기간(제척기간)은 계산하지 않습니다.
-      각 영역의 처리완료 건수를 입력하고 "보고하기"를 누르면 본사 관리자 화면에 반영됩니다.
+      "완료일" 열에 값이 있으면 처리완료로 자동 집계되어 본사 관리자 화면에 반영됩니다.
     </p>
     <div class="haza-import-columns">
       <div class="haza-import-col">
@@ -166,9 +166,6 @@
           <div class="haza-progress-bar"><div id="commonProgressFill" class="haza-progress-fill"></div></div>
           <span id="commonProgressLabel" class="haza-progress-label"></span>
         </div>
-        <div class="haza-grid">
-          <label>처리완료 건수<input type="number" id="commonCompletedCount" min="0" placeholder="0"></label>
-        </div>
       </div>
       <div class="haza-import-col">
         <h4>🏠 전유부분 등록</h4>
@@ -180,12 +177,9 @@
           <div class="haza-progress-bar"><div id="unitProgressFill" class="haza-progress-fill"></div></div>
           <span id="unitProgressLabel" class="haza-progress-label"></span>
         </div>
-        <div class="haza-grid">
-          <label>처리완료 건수<input type="number" id="unitCompletedCount" min="0" placeholder="0"></label>
-        </div>
       </div>
     </div>
-    <button type="button" id="btnReportProgress" class="haza-btn haza-btn--solid" style="margin-top:1rem;">보고하기</button>
+    <button type="button" id="btnReportProgress" class="haza-btn haza-btn--solid" style="margin-top:1rem;">본사로 보고하기</button>
     <span id="reportProgressNote" class="haza-note"></span>
 
     <div id="defectImportMappingArea" style="display:none; margin-top:1rem;">
@@ -303,7 +297,7 @@ async function apiFetch(path, opts){
 }
 
 /* ---------- state ---------- */
-var siteMeta = { complexName:'', useApprovalDate:'', inspectionDate:'', completedCount:{'공용부':0,'전유부':0} };
+var siteMeta = { complexName:'', useApprovalDate:'', inspectionDate:'' };
 var defects = [];
 
 function findKey(sampleRow, candidates){
@@ -319,6 +313,7 @@ var IMPORT_CANDIDATES = {
   defectType: ['하자유형','하자내용','유형','내용'],
   severity: ['심각도','등급','중요도'],
   foundDate: ['발견일','점검일','확인일','일자','날짜'],
+  completedDate: ['완료일','처리완료일','조치일'],
   description: ['설명','비고','상세']
 };
 var importRows = [];
@@ -329,7 +324,14 @@ var importMode = '전유부';
 var importWorkbook = null;
 var importFileName = '';
 
-function guessDataSheetName(sheetNames){
+function guessDataSheetName(sheetNames, mode){
+  var areaPattern = mode === '공용부' ? /공용/ : mode === '전유부' ? /전유|세대|호별/ : null;
+  if(areaPattern){
+    var areaAndData = sheetNames.find(function(n){ return areaPattern.test(n) && /내역|목록|리스트|list/i.test(n); });
+    if(areaAndData) return areaAndData;
+    var areaOnly = sheetNames.find(function(n){ return areaPattern.test(n) && !/표지|사진|대지|cover|photo/i.test(n); });
+    if(areaOnly) return areaOnly;
+  }
   var preferred = sheetNames.find(function(n){ return /내역|목록|리스트|list/i.test(n); });
   if(preferred) return preferred;
   var avoided = sheetNames.find(function(n){ return !/표지|사진|대지|cover|photo/i.test(n); });
@@ -373,7 +375,7 @@ async function handleDefectExcel(file, mode){
   var buf = await file.arrayBuffer();
   importWorkbook = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
   importFileName = file.name;
-  await loadExcelSheet(guessDataSheetName(importWorkbook.SheetNames));
+  await loadExcelSheet(guessDataSheetName(importWorkbook.SheetNames, mode));
 }
 
 async function loadExcelSheet(sheetName){
@@ -414,16 +416,18 @@ function getMappedDefect(row){
   var dongCol = importDetectedCols.dong, hoCol = importDetectedCols.ho;
   var typeCol = importDetectedCols.defectType, sevCol = importDetectedCols.severity;
   var foundCol = importDetectedCols.foundDate, descCol = importDetectedCols.description;
+  var completedCol = importDetectedCols.completedDate;
   var severity = sevCol ? guessSeverity(row[sevCol]) : '보통';
   var foundDate = foundCol ? (normalizeExcelDate(row[foundCol]) || todayStr()) : todayStr();
   var defectType = typeCol ? String(row[typeCol]||'').trim() : '';
   var description = descCol ? String(row[descCol]||'').trim() : '';
+  var completed = completedCol ? !!String(row[completedCol]||'').trim() : false;
 
   return {
     dong: dongCol ? String(row[dongCol]||'').trim() : '',
     ho: hoCol ? String(row[hoCol]||'').trim() : '',
     area: importMode, defectType: defectType, severity: severity,
-    foundDate: foundDate, description: description || defectType
+    foundDate: foundDate, description: description || defectType, completed: completed
   };
 }
 
@@ -460,8 +464,8 @@ async function runDefectImport(){
 }
 
 var AREA_UI = {
-  '공용부': { count:'commonDefectCount', chart:'commonProgressChart', fill:'commonProgressFill', label:'commonProgressLabel', input:'commonCompletedCount' },
-  '전유부': { count:'unitDefectCount', chart:'unitProgressChart', fill:'unitProgressFill', label:'unitProgressLabel', input:'unitCompletedCount' }
+  '공용부': { count:'commonDefectCount', chart:'commonProgressChart', fill:'commonProgressFill', label:'commonProgressLabel' },
+  '전유부': { count:'unitDefectCount', chart:'unitProgressChart', fill:'unitProgressFill', label:'unitProgressLabel' }
 };
 
 async function refreshAreaStats(){
@@ -473,8 +477,9 @@ async function refreshAreaStats(){
   }
   Object.keys(AREA_UI).forEach(function(area){
     var ui = AREA_UI[area];
-    var total = defects.filter(function(d){ return d.area === area; }).length;
-    var completed = Math.min((siteMeta.completedCount && siteMeta.completedCount[area]) || 0, total);
+    var areaDefects = defects.filter(function(d){ return d.area === area; });
+    var total = areaDefects.length;
+    var completed = areaDefects.filter(function(d){ return d.completed === true; }).length;
     $(ui.count).textContent = '현재까지 등록된 하자: ' + total + '건';
     if(total > 0){
       var rate = Math.round(completed/total*100);
@@ -487,13 +492,19 @@ async function refreshAreaStats(){
   });
 }
 
+async function reportProgress(){
+  $('btnReportProgress').disabled = true;
+  await refreshAreaStats();
+  $('btnReportProgress').disabled = false;
+  $('reportProgressNote').textContent = '본사에 보고되었습니다.';
+  setTimeout(function(){ $('reportProgressNote').textContent=''; }, 3000);
+}
+
 /* ---------- 현장정보 폼 ---------- */
 function loadMetaIntoForm(){
   $('metaComplexName').value = siteMeta.complexName||'';
   $('metaUseApprovalDate').value = siteMeta.useApprovalDate||'';
   $('metaInspectionDate').value = siteMeta.inspectionDate||'';
-  $('commonCompletedCount').value = (siteMeta.completedCount && siteMeta.completedCount['공용부']) || 0;
-  $('unitCompletedCount').value = (siteMeta.completedCount && siteMeta.completedCount['전유부']) || 0;
 }
 async function saveMeta(){
   siteMeta.complexName = $('metaComplexName').value.trim();
@@ -506,20 +517,6 @@ async function saveMeta(){
     $('metaSavedNote').textContent = '저장 실패: ' + e.message;
   }
   setTimeout(function(){ $('metaSavedNote').textContent=''; }, 3000);
-}
-async function reportProgress(){
-  siteMeta.completedCount = {
-    '공용부': Math.max(0, parseInt($('commonCompletedCount').value, 10) || 0),
-    '전유부': Math.max(0, parseInt($('unitCompletedCount').value, 10) || 0)
-  };
-  try{
-    await apiFetch('/api/site/meta', { method:'POST', body: siteMeta });
-    $('reportProgressNote').textContent = '보고되었습니다.';
-    await refreshAreaStats();
-  } catch(e){
-    $('reportProgressNote').textContent = '보고 실패: ' + e.message;
-  }
-  setTimeout(function(){ $('reportProgressNote').textContent=''; }, 3000);
 }
 
 /* ---------- 로그인/로그아웃 ---------- */

@@ -259,14 +259,10 @@ async function handleListUsers(env, request) {
     var defectCount = 0, completedCount = 0;
     try {
       var r = await readJsonFile(env, 'data/sites/' + u.siteId + '/defects.json');
-      defectCount = (r.data || []).length;
+      var siteDefects = r.data || [];
+      defectCount = siteDefects.length;
+      completedCount = siteDefects.filter(function (d) { return d.completed === true; }).length;
     } catch (e) { /* ignore, show 0 */ }
-    try {
-      var m = await readJsonFile(env, 'data/sites/' + u.siteId + '/meta.json');
-      var cc = (m.data && m.data.completedCount) || {};
-      completedCount = (parseInt(cc['공용부'], 10) || 0) + (parseInt(cc['전유부'], 10) || 0);
-    } catch (e) { /* ignore, show 0 */ }
-    if (completedCount > defectCount) completedCount = defectCount;
     var completionRate = defectCount > 0 ? Math.round((completedCount / defectCount) * 100) : null;
     list.push({ id: u.id, siteName: u.siteName, siteId: u.siteId, defectCount: defectCount, completedCount: completedCount, completionRate: completionRate, createdAt: u.createdAt });
   }
@@ -279,23 +275,18 @@ async function handleGetMeta(env, request, url) {
   var siteId = (auth.role === 'admin' ? url.searchParams.get('siteId') : auth.siteId);
   if (!siteId) return errorResponse(env, 'siteId가 필요합니다.', 400);
   var r = await readJsonFile(env, 'data/sites/' + siteId + '/meta.json');
-  return jsonResponse(env, { meta: r.data || { complexName: '', useApprovalDate: '', inspectionDate: '', completedCount: { '공용부': 0, '전유부': 0 } } });
+  return jsonResponse(env, { meta: r.data || { complexName: '', useApprovalDate: '', inspectionDate: '' } });
 }
 
 async function handleSaveMeta(env, request) {
   var auth = await requireAuth(env, request);
   if (!auth || auth.role !== 'user') return errorResponse(env, '사업소 계정만 사용할 수 있습니다.', 403);
   var body = await request.json().catch(function () { return {}; });
-  var incomingCompleted = body.completedCount || {};
   var r = await readJsonFile(env, 'data/sites/' + auth.siteId + '/meta.json');
   var meta = {
     complexName: String(body.complexName || ''),
     useApprovalDate: String(body.useApprovalDate || ''),
     inspectionDate: String(body.inspectionDate || ''),
-    completedCount: {
-      '공용부': Math.max(0, parseInt(incomingCompleted['공용부'], 10) || 0),
-      '전유부': Math.max(0, parseInt(incomingCompleted['전유부'], 10) || 0),
-    },
   };
   await writeJsonFile(env, 'data/sites/' + auth.siteId + '/meta.json', meta, '현장 정보 저장: ' + auth.siteId, r.sha);
   return jsonResponse(env, { ok: true });
@@ -326,6 +317,7 @@ async function handleImportDefects(env, request) {
       dong: String(d.dong || ''), ho: String(d.ho || ''), area: String(d.area || ''),
       defectType: String(d.defectType || '미분류'), severity: String(d.severity || '보통'),
       foundDate: String(d.foundDate || ''), description: String(d.description || ''),
+      completed: Boolean(d.completed),
       createdAt: new Date().toISOString(),
     };
   });
