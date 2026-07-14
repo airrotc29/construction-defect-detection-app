@@ -26,7 +26,7 @@
 <div class="page-wrap">
 <h1 id="ace-tech-하자관리-시스템">ACE TECH 하자관리 시스템</h1>
 
-<p align="center"><strong>에이스종합관리(주)</strong></p>
+<p align="center"><strong>에이스 테크 종합관리(주)</strong></p>
 
 <p>이미 만들어둔 하자 목록(엑셀·한글·PDF 등)을 시스템 서식에 맞춰 다시 입력할 필요 없이 그대로 가져와
 등록합니다. <strong>연차별 하자담보책임 기준</strong>(집합건물법령)은 아래 안내를 참고해 확인하시고, 호수별 상세
@@ -150,12 +150,13 @@
 
   <section class="haza-card">
     <h3>2. 엑셀/기존 파일에서 하자 일괄 등록</h3>
-    <p class="haza-desc">반드시 본사 서식에 맞게 작성해 주시기 바랍니다.</p>
+    <p class="haza-desc"><span class="haza-blink-red">반드시 본사 서식에 맞게 작성해 주시기 바랍니다.</span></p>
     <div class="haza-import-columns">
       <div class="haza-import-col">
         <h4>🏢 공용부분 등록</h4>
         <div class="haza-toolbar">
           <label class="haza-file-btn">엑셀 업로드<input type="file" id="commonExcelInput" accept=".xlsx,.xls"></label>
+          <button type="button" id="btnDownloadTemplateCommon" class="haza-btn haza-btn--outline">📥 본사서식 다운받기</button>
         </div>
         <span id="commonDefectCount" class="haza-note"></span>
         <div id="commonProgressChart" class="haza-progress-wrap" style="display:none;">
@@ -168,12 +169,14 @@
             <table class="haza-table" id="commonImportPreviewTable"><thead></thead><tbody></tbody></table>
           </div>
           <button type="button" id="btnImportCommon" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">가져오기</button>
+          <button type="button" id="btnSetTemplateCommon" class="haza-btn haza-btn--outline" style="margin-top:.8rem;">이 파일을 본사서식으로 지정</button>
         </div>
       </div>
       <div class="haza-import-col">
         <h4>🏠 전유부분 등록</h4>
         <div class="haza-toolbar">
           <label class="haza-file-btn">엑셀 업로드<input type="file" id="unitDefectExcelInput" accept=".xlsx,.xls"></label>
+          <button type="button" id="btnDownloadTemplateUnit" class="haza-btn haza-btn--outline">📥 본사서식 다운받기</button>
         </div>
         <span id="unitDefectCount" class="haza-note"></span>
         <div id="unitProgressChart" class="haza-progress-wrap" style="display:none;">
@@ -186,6 +189,7 @@
             <table class="haza-table" id="unitImportPreviewTable"><thead></thead><tbody></tbody></table>
           </div>
           <button type="button" id="btnImportUnit" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">가져오기</button>
+          <button type="button" id="btnSetTemplateUnit" class="haza-btn haza-btn--outline" style="margin-top:.8rem;">이 파일을 본사서식으로 지정</button>
         </div>
       </div>
     </div>
@@ -204,6 +208,7 @@
 .haza-info{background:#f3f6fd;border:1px solid #d7e0f5;border-radius:10px;padding:1rem 1.2rem;margin:1.5rem 0;}
 .haza-info summary{cursor:pointer;font-weight:700;color:#16233c;}
 .haza-blink{color:#2148b8;animation:haza-blink 1.2s ease-in-out infinite;}
+.haza-blink-red{color:#c0392b;font-weight:700;animation:haza-blink 1.2s ease-in-out infinite;}
 @keyframes haza-blink{0%,100%{opacity:1;}50%{opacity:.25;}}
 .haza-info table{width:100%;border-collapse:collapse;margin:.9rem 0;font-size:.92rem;}
 .haza-info th,.haza-info td{border:1px solid #d7e0f5;padding:.5rem .6rem;text-align:left;}
@@ -342,14 +347,29 @@ var IMPORT_CANDIDATES = {
 };
 var AREA_UI = {
   '공용부': { count:'commonDefectCount', chart:'commonProgressChart', fill:'commonProgressFill', label:'commonProgressLabel',
-              mappingArea:'commonImportMappingArea', previewTable:'commonImportPreviewTable', importBtn:'btnImportCommon' },
+              mappingArea:'commonImportMappingArea', previewTable:'commonImportPreviewTable', importBtn:'btnImportCommon',
+              downloadTemplateBtn:'btnDownloadTemplateCommon', setTemplateBtn:'btnSetTemplateCommon' },
   '전유부': { count:'unitDefectCount', chart:'unitProgressChart', fill:'unitProgressFill', label:'unitProgressLabel',
-              mappingArea:'unitImportMappingArea', previewTable:'unitImportPreviewTable', importBtn:'btnImportUnit' }
+              mappingArea:'unitImportMappingArea', previewTable:'unitImportPreviewTable', importBtn:'btnImportUnit',
+              downloadTemplateBtn:'btnDownloadTemplateUnit', setTemplateBtn:'btnSetTemplateUnit' }
 };
 var importState = {
-  '공용부': { workbook:null, fileName:'', headers:[], rows:[], detectedCols:{} },
-  '전유부': { workbook:null, fileName:'', headers:[], rows:[], detectedCols:{} }
+  '공용부': { workbook:null, fileName:'', rawBase64:'', headers:[], rows:[], detectedCols:{} },
+  '전유부': { workbook:null, fileName:'', rawBase64:'', headers:[], rows:[], detectedCols:{} }
 };
+
+function arrayBufferToBase64(buf){
+  var bytes = new Uint8Array(buf);
+  var binary = '';
+  for(var i=0;i<bytes.length;i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+function base64ToBlob(base64, mime){
+  var binary = atob(base64);
+  var bytes = new Uint8Array(binary.length);
+  for(var i=0;i<binary.length;i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], {type: mime});
+}
 
 function guessDataSheetName(sheetNames, mode){
   var areaPattern = mode === '공용부' ? /공용/ : mode === '전유부' ? /전유|세대|호별/ : null;
@@ -402,7 +422,46 @@ async function handleDefectExcel(file, mode){
   var buf = await file.arrayBuffer();
   st.workbook = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
   st.fileName = file.name;
+  st.rawBase64 = arrayBufferToBase64(buf);
   await loadExcelSheet(guessDataSheetName(st.workbook.SheetNames, mode), mode);
+}
+
+async function setAsTemplate(mode){
+  var st = importState[mode], ui = AREA_UI[mode];
+  if(!st.rawBase64){ alert('먼저 엑셀 파일을 업로드하세요.'); return; }
+  var btn = $(ui.setTemplateBtn);
+  btn.disabled = true;
+  try{
+    await apiFetch('/api/template', { method:'POST', body:{ area: mode, fileName: st.fileName, contentBase64: st.rawBase64 } });
+    alert('"'+st.fileName+'" 파일을 '+mode+' 본사서식으로 지정했습니다.');
+  } catch(e){
+    alert('본사서식 지정 실패: ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function downloadTemplate(mode){
+  var ui = AREA_UI[mode];
+  var btn = $(ui.downloadTemplateBtn);
+  btn.disabled = true;
+  try{
+    var result = await apiFetch('/api/template?area=' + encodeURIComponent(mode));
+    if(!result || !result.contentBase64){ alert('아직 지정된 '+mode+' 본사서식이 없습니다.'); return; }
+    var blob = base64ToBlob(result.contentBase64, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = result.fileName || (mode + '_본사서식.xlsx');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch(e){
+    alert('본사서식 다운로드 실패: ' + e.message);
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 async function loadExcelSheet(sheetName, mode){
@@ -704,6 +763,10 @@ async function init(){
   $('unitDefectExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '전유부').then(function(){ e.target.value=''; }); });
   $('btnImportCommon').addEventListener('click', function(){ runDefectImport('공용부'); });
   $('btnImportUnit').addEventListener('click', function(){ runDefectImport('전유부'); });
+  $('btnDownloadTemplateCommon').addEventListener('click', function(){ downloadTemplate('공용부'); });
+  $('btnDownloadTemplateUnit').addEventListener('click', function(){ downloadTemplate('전유부'); });
+  $('btnSetTemplateCommon').addEventListener('click', function(){ setAsTemplate('공용부'); });
+  $('btnSetTemplateUnit').addEventListener('click', function(){ setAsTemplate('전유부'); });
   $('btnReportProgress').addEventListener('click', reportProgress);
 
   if(getSession()) await showLoggedInView();
@@ -721,7 +784,7 @@ document.addEventListener('DOMContentLoaded', init);
   해당 사업소와 관리자만 조회할 수 있습니다.</p>
 </blockquote>
 
-<p class="site-footer">© 에이스종합관리(주)</p>
+<p class="site-footer">© 에이스 테크 종합관리(주)</p>
 </div>
 </body>
 </html>

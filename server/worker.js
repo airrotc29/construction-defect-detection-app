@@ -160,9 +160,7 @@ function base64UrlToBytesFromStandardBase64(b64) {
   return bytes;
 }
 
-async function writeJsonFile(env, path, dataObj, message, sha) {
-  var contentStr = JSON.stringify(dataObj, null, 2);
-  var contentB64 = btoa(unescape(encodeURIComponent(contentStr)));
+async function writeRawContent(env, path, contentB64, message, sha) {
   var body = {
     message: message,
     content: contentB64,
@@ -180,6 +178,31 @@ async function writeJsonFile(env, path, dataObj, message, sha) {
   }
   var result = await res.json();
   return result.content.sha;
+}
+
+async function writeJsonFile(env, path, dataObj, message, sha) {
+  var contentStr = JSON.stringify(dataObj, null, 2);
+  var contentB64 = btoa(unescape(encodeURIComponent(contentStr)));
+  return await writeRawContent(env, path, contentB64, message, sha);
+}
+
+// returns { contentB64, sha } (standard base64, ready to send straight to the client) or nulls if missing
+async function readRawFile(env, path) {
+  var res = await fetch(githubApiUrl(env, path) + '?ref=' + (env.DATA_BRANCH || 'main'), { headers: githubHeaders(env) });
+  if (res.status === 404) return { contentB64: null, sha: null };
+  if (!res.ok) throw new Error('GitHub read failed (' + res.status + '): ' + path);
+  var body = await res.json();
+  if (body.content) return { contentB64: body.content.replace(/\n/g, ''), sha: body.sha };
+  // over 1MB — fall back to the raw media type and re-encode to base64
+  var rawRes = await fetch(githubApiUrl(env, path) + '?ref=' + (env.DATA_BRANCH || 'main'), {
+    headers: Object.assign({}, githubHeaders(env), { 'Accept': 'application/vnd.github.raw+json' }),
+  });
+  if (!rawRes.ok) throw new Error('GitHub raw read failed (' + rawRes.status + '): ' + path);
+  var buf = await rawRes.arrayBuffer();
+  var bytes = new Uint8Array(buf);
+  var binary = '';
+  for (var i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+  return { contentB64: btoa(binary), sha: body.sha };
 }
 
 /* ---------- 데이터 헬퍼 ---------- */
@@ -371,6 +394,49 @@ async function handleImportDefects(env, request) {
   return jsonResponse(env, { ok: true, imported: addedCount, updated: updatedCount, duplicates: unchangedCount, total: existing.length });
 }
 
+function templateAreaKey(area) {
+  if (area === '공용부') return 'common';
+  if (area === '전유부') return 'unit';
+  return null;
+}
+
+async function handleGetTemplate(env, request, url) {
+  var auth = await requireAuth(env, request);
+  if (!auth) return errorResponse(env, '로그인이 필요합니다.', 401);
+  var key = templateAreaKey(url.searchParams.get('area'));
+  if (!key) return errorResponse(env, 'area 값이 올바르지 않습니다.', 400);
+
+  var metaR = await readJsonFile(env, 'data/templates/meta.json');
+  var metaAll = metaR.data || {};
+  var info = metaAll[key];
+  if (!info) return jsonResponse(env, { contentBase64: null });
+
+  var fileR = await readRawFile(env, 'data/templates/' + key + '.xlsx');
+  if (!fileR.contentB64) return jsonResponse(env, { contentBase64: null });
+  return jsonResponse(env, { contentBase64: fileR.contentB64, fileName: info.fileName || (key + '.xlsx') });
+}
+
+async function handleSetTemplate(env, request) {
+  var auth = await requireAuth(env, request);
+  if (!auth) return errorResponse(env, '로그인이 필요합니다.', 401);
+  var body = await request.json().catch(function () { return {}; });
+  var key = templateAreaKey(String(body.area || ''));
+  if (!key) return errorResponse(env, 'area 값이 올바르지 않습니다.', 400);
+  var contentBase64 = String(body.contentBase64 || '');
+  if (!contentBase64) return errorResponse(env, '파일 내용이 없습니다.', 400);
+  var fileName = String(body.fileName || (key + '.xlsx'));
+
+  var existingFile = await readRawFile(env, 'data/templates/' + key + '.xlsx');
+  await writeRawContent(env, 'data/templates/' + key + '.xlsx', contentBase64, '본사서식 지정(' + key + '): ' + fileName, existingFile.sha);
+
+  var metaR = await readJsonFile(env, 'data/templates/meta.json');
+  var metaAll = metaR.data || {};
+  metaAll[key] = { fileName: fileName, updatedAt: new Date().toISOString(), updatedBy: auth.uid };
+  await writeJsonFile(env, 'data/templates/meta.json', metaAll, '본사서식 메타 갱신(' + key + '): ' + fileName, metaR.sha);
+
+  return jsonResponse(env, { ok: true });
+}
+
 /* ---------- 진입점 ---------- */
 
 export default {
@@ -388,6 +454,8 @@ export default {
       if (url.pathname === '/api/site/meta' && request.method === 'POST') return await handleSaveMeta(env, request);
       if (url.pathname === '/api/site/defects' && request.method === 'GET') return await handleGetDefects(env, request, url);
       if (url.pathname === '/api/site/defects/import' && request.method === 'POST') return await handleImportDefects(env, request);
+      if (url.pathname === '/api/template' && request.method === 'GET') return await handleGetTemplate(env, request, url);
+      if (url.pathname === '/api/template' && request.method === 'POST') return await handleSetTemplate(env, request);
       return errorResponse(env, 'Not found', 404);
     } catch (err) {
       return errorResponse(env, '서버 오류: ' + (err && err.message ? err.message : String(err)), 500);
