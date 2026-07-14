@@ -162,24 +162,7 @@
     </div>
   </section>
 
-  <section class="haza-card">
-    <h3>3. 보고서 · 백업</h3>
-    <div class="haza-toolbar">
-      <select id="reportUnitSelect"><option value="">호수 선택</option></select>
-      <button type="button" id="btnUnitReport" class="haza-btn haza-btn--solid">호수별 보고서 생성</button>
-      <button type="button" id="btnAggregateReport" class="haza-btn haza-btn--solid">전체 집계 보고서 생성</button>
-      <button type="button" id="btnExportExcel" class="haza-btn haza-btn--outline">엑셀로 집계 내보내기</button>
-    </div>
-    <div class="haza-toolbar">
-      <button type="button" id="btnExportBackup" class="haza-btn haza-btn--outline">데이터 백업(JSON) 내보내기</button>
-      <label class="haza-file-btn">백업 불러오기<input type="file" id="backupInput" accept=".json"></label>
-      <button type="button" id="btnResetAll" class="haza-btn haza-btn--danger-outline">전체 초기화</button>
-    </div>
-  </section>
-
 </div>
-
-<div id="reportPrintArea" class="report-print-area"></div>
 
 <style>
 .haza-info{background:#f3f6fd;border:1px solid #d7e0f5;border-radius:10px;padding:1rem 1.2rem;margin:1.5rem 0;}
@@ -233,24 +216,6 @@
 
 .haza-badge{display:inline-block;padding:.2em .6em;border-radius:999px;font-size:.78rem;font-weight:700;}
 .badge-mild{background:#e7edfb;color:#2148b8;}
-
-.report-print-area{display:none;}
-@media print{
-  body.printing-report > *:not(#content){display:none !important;}
-  body.printing-report #content > *:not(.report-print-area){display:none !important;}
-  body.printing-report .report-print-area{display:block !important;}
-}
-.report-page{padding:1rem 0;font-family:inherit;color:#16233c;}
-.report-page h1{font-size:1.5rem;border-bottom:3px solid #16233c;padding-bottom:.4rem;}
-.report-page h2{font-size:1.15rem;margin-top:1.6rem;}
-.report-meta{color:#5a6577;font-size:.9rem;margin-bottom:1rem;}
-.report-table{width:100%;border-collapse:collapse;font-size:.82rem;margin:.8rem 0;}
-.report-table th,.report-table td{border:1px solid #ccc;padding:.4rem .5rem;text-align:left;}
-.report-table th{background:#eef1f7;}
-.report-entry{border:1px solid #ccc;border-radius:8px;padding:.8rem 1rem;margin-bottom:.8rem;page-break-inside:avoid;}
-.report-stat-grid{display:flex;flex-wrap:wrap;gap:1rem;margin:.8rem 0;}
-.report-stat{border:1px solid #ccc;border-radius:8px;padding:.6rem 1rem;min-width:120px;}
-.report-stat b{display:block;font-size:1.3rem;}
 </style>
 
 <script src="assets/js/xlsx.core.min.js"></script>
@@ -258,40 +223,9 @@
 (function(){
 'use strict';
 
-var YEAR_CLASSES = {
-  finish2:      { years:2,  label:'2년 · 마감공사',                 basis:'집합건물법 시행령 제5조 제2호 다목', items:['타일공사','실리콘/코킹','도장(페인트)공사','도배공사','바닥재공사','기타 마감공사'] },
-  functional3:  { years:3,  label:'3년 · 설비·목공사·창호·조경',     basis:'집합건물법 시행령 제5조 제2호 나목', items:['전기·전화·통신·홈네트워크 설비','가스·급수·배수·환기·냉난방 설비','소화·배연·오물처리 설비','목공사','창호공사','조경공사'] },
-  structural5:  { years:5,  label:'5년 · 구조·안전',                 basis:'집합건물법 시행령 제5조 제2호 가목', items:['대지조성공사','철근콘크리트공사','철골공사','조적(組積)공사','지붕공사','방수공사'] },
-  pre5:         { years:5,  label:'5년 · 기산일 이전 발생 하자',     basis:'집합건물법 시행령 제5조 제1호',     items:[] },
-  major10:      { years:10, label:'10년 · 주요구조부·지반공사',      basis:'집합건물법 제9조의2 제1항 제1호',   items:['내력벽','기둥','바닥','보','지붕틀','주계단','지반공사(지반침하 등)'] }
-};
-var STAGES = [
-  {n:1,label:'① 하자 접수·기록'},
-  {n:2,label:'② 서면청구(내용증명)'},
-  {n:3,label:'③ 관리단 의결·전문진단'},
-  {n:4,label:'④ 청구권 확보(채권양도)'},
-  {n:5,label:'⑤ 협의(하자보수)'},
-  {n:6,label:'⑥ 소송 전환'}
-];
-
 function $(id){ return document.getElementById(id); }
 function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-function sanitizeName(s){ return String(s==null?'':s).replace(/[\\/:*?"<>|]/g,'_').trim() || '_'; }
 function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function addYearsToDate(dateStr, years){
-  if(!dateStr) return null;
-  var d = new Date(dateStr+'T00:00:00');
-  if(isNaN(d.getTime())) return null;
-  d.setFullYear(d.getFullYear()+Number(years));
-  return d;
-}
-function daysUntil(dateObj){
-  if(!dateObj || isNaN(dateObj.getTime())) return null;
-  var today = new Date(); today.setHours(0,0,0,0);
-  var t = new Date(dateObj); t.setHours(0,0,0,0);
-  return Math.round((t-today)/86400000);
-}
-function ycLabel(yc){ return (yc && YEAR_CLASSES[yc]) ? YEAR_CLASSES[yc].label : '미분류(존속기간 미지정)'; }
 function fmtDate(d){
   if(!d) return '';
   if(typeof d === 'string') return d;
@@ -494,153 +428,7 @@ async function runDefectImport(){
     imported++;
   });
   await Promise.all(jobs);
-  refreshDefectDependentViews();
   alert('가져오기 완료: ' + imported + '건 등록' + (skippedMissingUnit ? ', 동/호수 누락 ' + skippedMissingUnit + '건 건너뜀' : '') + '\n존속기간(제척기간)은 계산되지 않았습니다.');
-}
-
-function refreshDefectDependentViews(){
-  refreshReportUnitSelect();
-}
-
-/* ---------- 보고서 ---------- */
-function refreshReportUnitSelect(){
-  var sel = $('reportUnitSelect');
-  var seen = {};
-  var opts = ['<option value="">호수 선택</option>'];
-  defects.forEach(function(d){
-    var key = d.dong+'-'+d.ho;
-    if(seen[key]) return; seen[key] = true;
-    opts.push('<option value="'+escapeHtml(key)+'">'+escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+'</option>');
-  });
-  sel.innerHTML = opts.join('');
-}
-function printReport(html){
-  $('reportPrintArea').innerHTML = html;
-  document.body.classList.add('printing-report');
-  window.print();
-}
-window.addEventListener('afterprint', function(){ document.body.classList.remove('printing-report'); });
-
-function reportEntryHtml(d){
-  var dday = daysUntil(new Date(d.expireDate));
-  return '<div class="report-entry">' +
-    '<div><b>'+escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+'</b> · '+escapeHtml(d.area)+' · '+escapeHtml(ycLabel(d.yearClass))+' · 심각도 '+escapeHtml(d.severity)+'</div>' +
-    '<div>하자유형: '+escapeHtml(d.defectType)+' &nbsp;|&nbsp; 근거: '+escapeHtml(d.basis)+'</div>' +
-    (d.baseDate || d.expireDate ? '<div>기산일: '+escapeHtml(d.baseDate)+' &nbsp;|&nbsp; 제척기간 만료예정일: '+escapeHtml(d.expireDate)+' &nbsp;|&nbsp; 잔여: '+(dday==null?'-':(dday<0?'도과':('D-'+dday)))+'</div>' : '') +
-    '<div>발견일: '+escapeHtml(d.foundDate)+' &nbsp;|&nbsp; 처리단계: '+escapeHtml(STAGES[d.stage-1].label)+'</div>' +
-    (d.collapseFlag ? '<div>⚠ 건물 멸실·훼손 특례 적용 — 멸실·훼손일: '+escapeHtml(d.collapseDate)+', 1년 특례 만료일: '+escapeHtml(d.collapseExpireDate)+' (통상 만료일: '+escapeHtml(d.normalExpireDate)+', 집합건물법 제9조의2 제3항)</div>' : '') +
-    (d.description ? '<div>설명: '+escapeHtml(d.description)+'</div>' : '') +
-    (d.stageNote ? '<div>진행메모: '+escapeHtml(d.stageNote)+'</div>' : '') +
-  '</div>';
-}
-
-function generateUnitReport(){
-  var key = $('reportUnitSelect').value;
-  if(!key){ alert('호수를 선택하세요.'); return; }
-  var parts = key.split('-'); var dong = parts[0]; var ho = parts.slice(1).join('-');
-  var list = defects.filter(function(d){ return d.dong === dong && d.ho === ho; });
-  var html = '<div class="report-page">' +
-    '<h1>'+escapeHtml(siteMeta.complexName||'')+' — '+escapeHtml(dong)+'동 '+escapeHtml(ho)+' 하자 상세 보고서</h1>' +
-    '<div class="report-meta">점검일: '+escapeHtml(siteMeta.inspectionDate||'-')+' / 생성일: '+todayStr()+' / 총 '+list.length+'건</div>' +
-    list.map(reportEntryHtml).join('') +
-  '</div>';
-  printReport(html);
-}
-
-function generateAggregateReport(){
-  if(!defects.length){ alert('등록된 하자가 없습니다.'); return; }
-  var bySeverity = {'경미':0,'보통':0,'심각':0};
-  var byYearClass = {finish2:0,functional3:0,structural5:0,pre5:0,major10:0};
-  var byStage = {1:0,2:0,3:0,4:0,5:0,6:0};
-  var unclassifiedCount = 0;
-  defects.forEach(function(d){
-    bySeverity[d.severity]++;
-    if(d.yearClass && byYearClass.hasOwnProperty(d.yearClass)) byYearClass[d.yearClass]++; else unclassifiedCount++;
-    byStage[d.stage]++;
-  });
-  var urgent = defects.filter(function(d){ var dd = daysUntil(new Date(d.expireDate)); return dd != null && dd <= 90; })
-    .sort(function(a,b){ return new Date(a.expireDate)-new Date(b.expireDate); });
-
-  var statHtml = '<div class="report-stat-grid">' +
-    '<div class="report-stat">전체 하자<b>'+defects.length+'건</b></div>' +
-    '<div class="report-stat">심각<b>'+bySeverity['심각']+'건</b></div>' +
-    '<div class="report-stat">제척기간 임박(90일 이내)<b>'+urgent.length+'건</b></div>' +
-  '</div>';
-
-  var ycRows = ['finish2','functional3','structural5','pre5','major10'].map(function(y){ return '<tr><td>'+YEAR_CLASSES[y].label+'</td><td>'+byYearClass[y]+'건</td></tr>'; }).join('')
-    + (unclassifiedCount ? '<tr><td>미분류(존속기간 미지정)</td><td>'+unclassifiedCount+'건</td></tr>' : '');
-  var stageRows = STAGES.map(function(s){ return '<tr><td>'+s.label+'</td><td>'+byStage[s.n]+'건</td></tr>'; }).join('');
-
-  var urgentRows = urgent.map(function(d){
-    var dday = daysUntil(new Date(d.expireDate));
-    return '<tr><td>'+escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+'</td><td>'+escapeHtml(d.defectType)+'</td><td>'+escapeHtml(d.expireDate)+'</td><td>'+(dday<0?'도과':('D-'+dday))+'</td><td>'+escapeHtml(STAGES[d.stage-1].label)+'</td></tr>';
-  }).join('');
-
-  var allRows = defects.slice().sort(function(a,b){ return new Date(a.expireDate)-new Date(b.expireDate); }).map(function(d){
-    var dday = daysUntil(new Date(d.expireDate));
-    return '<tr><td>'+escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+'</td><td>'+escapeHtml(d.area)+'</td><td>'+escapeHtml(ycLabel(d.yearClass))+'</td><td>'+escapeHtml(d.defectType)+'</td><td>'+escapeHtml(d.severity)+'</td><td>'+escapeHtml(d.expireDate)+'</td><td>'+(dday==null?'-':(dday<0?'도과':('D-'+dday)))+'</td><td>'+escapeHtml(STAGES[d.stage-1].label)+'</td></tr>';
-  }).join('');
-
-  var html = '<div class="report-page">' +
-    '<h1>'+escapeHtml(siteMeta.complexName||'')+' 하자적출 전체 집계 보고서</h1>' +
-    '<div class="report-meta">점검일: '+escapeHtml(siteMeta.inspectionDate||'-')+' / 사용검사일/사용승인일: '+escapeHtml(siteMeta.useApprovalDate||'-')+' / 생성일: '+todayStr()+'</div>' +
-    statHtml +
-    '<h2>연차별 현황</h2><table class="report-table"><thead><tr><th>연차구분</th><th>건수</th></tr></thead><tbody>'+ycRows+'</tbody></table>' +
-    '<h2>처리단계별 현황</h2><table class="report-table"><thead><tr><th>처리단계</th><th>건수</th></tr></thead><tbody>'+stageRows+'</tbody></table>' +
-    '<h2>⚠ 제척기간 임박(90일 이내) 목록</h2>' + (urgent.length ? '<table class="report-table"><thead><tr><th>동/호</th><th>하자유형</th><th>만료예정일</th><th>잔여</th><th>처리단계</th></tr></thead><tbody>'+urgentRows+'</tbody></table>' : '<p>해당 없음</p>') +
-    '<h2>전체 목록</h2><table class="report-table"><thead><tr><th>동/호</th><th>구분</th><th>연차</th><th>하자유형</th><th>심각도</th><th>만료예정일</th><th>잔여</th><th>처리단계</th></tr></thead><tbody>'+allRows+'</tbody></table>' +
-  '</div>';
-  printReport(html);
-}
-
-function exportDefectsExcel(){
-  if(!defects.length){ alert('등록된 하자가 없습니다.'); return; }
-  var rows = defects.map(function(d){
-    var dday = daysUntil(new Date(d.expireDate));
-    return {
-      '동':d.dong,'호수':d.ho,'구분':d.area,'연차구분':ycLabel(d.yearClass),'근거':d.basis,
-      '하자유형':d.defectType,'심각도':d.severity,'발견일':d.foundDate,'기산일':d.baseDate,
-      '제척기간만료일':d.expireDate,'잔여일수(D-day)':dday,'처리단계':STAGES[d.stage-1].label,
-      '멸실훼손특례':d.collapseFlag ? ('적용(멸실훼손일 '+d.collapseDate+', 통상만료일 '+d.normalExpireDate+')') : '',
-      '진행메모':d.stageNote||'','설명':d.description||''
-    };
-  });
-  var ws = XLSX.utils.json_to_sheet(rows);
-  var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, '하자집계');
-  XLSX.writeFile(wb, '하자집계_' + todayStr() + '.xlsx');
-}
-
-/* ---------- 백업/초기화 ---------- */
-function exportBackup(){
-  var blob = new Blob([JSON.stringify({siteMeta:siteMeta, units:units, defects:defects}, null, 2)], {type:'application/json'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = '하자적출_백업_' + todayStr() + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-async function importBackup(file){
-  var text = await file.text();
-  var data = JSON.parse(text);
-  if(!confirm('현재 데이터를 백업 파일 내용으로 덮어씁니다. 계속할까요?')) return;
-  await idbClear('units'); await idbClear('defects');
-  siteMeta = data.siteMeta || siteMeta;
-  units = []; defects = [];
-  var jobs = [];
-  (data.units||[]).forEach(function(u){ delete u.id; jobs.push(idbPut('units', u).then(function(id){ u.id=id; units.push(u); })); });
-  (data.defects||[]).forEach(function(d){ var id=d.id; jobs.push(idbPut('defects', d).then(function(){ defects.push(d); })); });
-  await Promise.all(jobs);
-  await idbPut('kv', Object.assign({key:'siteMeta'}, siteMeta));
-  loadMetaIntoForm();
-  refreshDefectDependentViews();
-  alert('백업을 불러왔습니다.');
-}
-async function resetAll(){
-  if(!confirm('현장 정보와 하자 기록을 모두 삭제합니다. 계속할까요?')) return;
-  await idbClear('units'); await idbClear('defects'); await idbClear('kv');
-  units = []; defects = []; siteMeta = {complexName:'',useApprovalDate:'',inspectionDate:''};
-  loadMetaIntoForm(); refreshDefectDependentViews();
 }
 
 /* ---------- 현장정보 폼 ---------- */
@@ -665,7 +453,6 @@ async function init(){
   loadMetaIntoForm();
 
   defects = await idbGetAll('defects');
-  refreshDefectDependentViews();
 
   $('btnSaveMeta').addEventListener('click', saveMeta);
   $('commonExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '공용부').then(function(){ e.target.value=''; }); });
@@ -678,13 +465,6 @@ async function init(){
     else if($('unitPasteInput').value.trim()) handleDefectPaste('전유부', 'unitPasteInput');
   });
   $('btnImportDefects').addEventListener('click', runDefectImport);
-
-  $('btnUnitReport').addEventListener('click', generateUnitReport);
-  $('btnAggregateReport').addEventListener('click', generateAggregateReport);
-  $('btnExportExcel').addEventListener('click', exportDefectsExcel);
-  $('btnExportBackup').addEventListener('click', exportBackup);
-  $('backupInput').addEventListener('change', function(e){ if(e.target.files[0]) importBackup(e.target.files[0]).then(function(){ e.target.value=''; }); });
-  $('btnResetAll').addEventListener('click', resetAll);
 }
 
 document.addEventListener('DOMContentLoaded', init);
