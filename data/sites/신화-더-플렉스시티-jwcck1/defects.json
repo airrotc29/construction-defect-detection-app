@@ -7,9 +7,10 @@
     "severity": "보통",
     "foundDate": "2026-07-14",
     "description": "센서등불량",
-    "completed": false,
+    "completed": true,
     "id": 1,
-    "createdAt": "2026-07-14T05:03:48.406Z"
+    "createdAt": "2026-07-14T05:03:48.406Z",
+    "updatedAt": "2026-07-14T06:51:21.832Z"
   },
   {
     "dong": "",
@@ -19163,5 +19164,17 @@
     "completed": false,
     "id": 1595,
     "createdAt": "2026-07-14T06:51:07.897Z"
+  },
+  {
+    "dong": "",
+    "ho": "1834",
+    "area": "전유부",
+    "defectType": "상부등불량",
+    "severity": "보통",
+    "foundDate": "2026-07-14",
+    "description": "미완료일 경우 완료일란을 비워주세요",
+    "completed": false,
+    "id": 1596,
+    "createdAt": "2026-07-14T06:51:21.832Z"
   }
 ]
