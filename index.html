@@ -259,9 +259,9 @@
 
 .report-print-area{display:none;}
 @media print{
-  body.printing-report > *:not(#content){display:none !important;}
-  body.printing-report #content > *:not(.report-print-area){display:none !important;}
-  body.printing-report .report-print-area{display:block !important;}
+  body.printing-report *{visibility:hidden;}
+  body.printing-report .report-print-area,body.printing-report .report-print-area *{visibility:visible;}
+  body.printing-report .report-print-area{display:block !important;position:absolute;left:0;top:0;width:100%;}
 }
 .report-page{padding:1rem 0;font-family:inherit;color:#16233c;}
 .report-page h1{font-size:1.4rem;border-bottom:3px solid #16233c;padding-bottom:.4rem;}
