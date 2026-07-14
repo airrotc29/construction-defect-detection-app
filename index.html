@@ -123,7 +123,7 @@
     <span id="createUserNote" class="haza-note"></span>
     <div class="haza-table-wrap" style="margin-top:1.2rem;">
       <table class="haza-table" id="usersTable">
-        <thead><tr><th>사업소명</th><th>아이디</th><th>🏢 공용부분 현황</th><th>🏠 전유부분 현황</th><th>생성일</th></tr></thead>
+        <thead><tr><th>사업소명</th><th>아이디</th><th>🏢 공용부분 현황</th><th>🏠 전유부분 현황</th><th>생성일</th><th>보고서</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -192,6 +192,9 @@
           <button type="button" id="btnImportUnit" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">가져오기</button>
         </div>
       </div>
+    </div>
+    <div class="haza-grid" style="margin-top:1rem;">
+      <label class="haza-span2">본사 참고보고 사항<textarea id="reportNote" rows="3" placeholder="본사에 함께 전달할 특이사항이 있으면 입력하세요"></textarea></label>
     </div>
     <button type="button" id="btnReportProgress" class="haza-btn haza-btn--solid" style="margin-top:1rem;">본사로 보고하기</button>
     <span id="reportProgressNote" class="haza-note"></span>
@@ -321,7 +324,7 @@ async function apiFetch(path, opts){
 }
 
 /* ---------- state ---------- */
-var siteMeta = { complexName:'', useApprovalDate:'', inspectionDate:'' };
+var siteMeta = { complexName:'', useApprovalDate:'', inspectionDate:'', reportNote:'' };
 var defects = [];
 
 function findKey(sampleRow, candidates){
@@ -532,24 +535,25 @@ function printReport(html){
 }
 window.addEventListener('afterprint', function(){ document.body.classList.remove('printing-report'); });
 
-function buildProgressReportHtml(){
+function buildProgressReportHtml(siteName, siteDefects, note){
   var statCards = Object.keys(AREA_UI).map(function(area){
-    var areaDefects = defects.filter(function(d){ return d.area === area; });
+    var areaDefects = siteDefects.filter(function(d){ return d.area === area; });
     var total = areaDefects.length;
     var completed = areaDefects.filter(function(d){ return d.completed === true; }).length;
     var rate = total > 0 ? Math.round(completed/total*100) : 0;
     return '<div class="report-stat">'+escapeHtml(area)+'<b>'+total+'건</b>처리완료 '+completed+'건 ('+rate+'%)</div>';
   }).join('');
 
-  var rows = defects.slice().sort(function(a,b){ return (a.area+a.dong+a.ho).localeCompare(b.area+b.dong+b.ho); }).map(function(d){
+  var rows = siteDefects.slice().sort(function(a,b){ return (a.area+a.dong+a.ho).localeCompare(b.area+b.dong+b.ho); }).map(function(d){
     return '<tr><td>'+escapeHtml(d.area)+'</td><td>'+escapeHtml(d.dong)+'</td><td>'+escapeHtml(d.ho)+'</td><td>'+escapeHtml(d.defectType)+'</td>'+
       '<td>'+escapeHtml(d.severity)+'</td><td>'+escapeHtml(d.foundDate)+'</td><td>'+(d.completed ? '완료' : '미완료')+'</td></tr>';
   }).join('');
 
   return '<div class="report-page">' +
-    '<h1>'+escapeHtml(siteMeta.complexName||'')+' 하자 처리 현황 보고서</h1>' +
-    '<div class="report-meta">생성일: '+todayStr()+' / 총 '+defects.length+'건</div>' +
+    '<h1>'+escapeHtml(siteName||'')+' 하자 처리 현황 보고서</h1>' +
+    '<div class="report-meta">생성일: '+todayStr()+' / 총 '+siteDefects.length+'건</div>' +
     '<div class="report-stat-grid">'+statCards+'</div>' +
+    (note ? '<h2>본사 참고보고 사항</h2><p class="report-meta" style="white-space:pre-wrap;">'+escapeHtml(note)+'</p>' : '') +
     '<h2>업로드 목록</h2>' +
     '<table class="report-table"><thead><tr><th>구분</th><th>동</th><th>호수</th><th>하자유형</th><th>심각도</th><th>발견일</th><th>완료여부</th></tr></thead><tbody>'+rows+'</tbody></table>' +
   '</div>';
@@ -557,9 +561,11 @@ function buildProgressReportHtml(){
 
 async function reportProgress(){
   $('btnReportProgress').disabled = true;
+  siteMeta.reportNote = $('reportNote').value;
+  try{ await apiFetch('/api/site/meta', { method:'POST', body: siteMeta }); } catch(e){ /* 저장 실패해도 보고서는 생성 */ }
   await refreshAreaStats();
   $('btnReportProgress').disabled = false;
-  if(defects.length) printReport(buildProgressReportHtml());
+  if(defects.length) printReport(buildProgressReportHtml(siteMeta.complexName, defects, siteMeta.reportNote));
   $('reportProgressNote').textContent = '본사에 보고되었습니다.';
   setTimeout(function(){ $('reportProgressNote').textContent=''; }, 3000);
 }
@@ -569,6 +575,7 @@ function loadMetaIntoForm(){
   $('metaComplexName').value = siteMeta.complexName||'';
   $('metaUseApprovalDate').value = siteMeta.useApprovalDate||'';
   $('metaInspectionDate').value = siteMeta.inspectionDate||'';
+  $('reportNote').value = siteMeta.reportNote||'';
 }
 async function saveMeta(){
   siteMeta.complexName = $('metaComplexName').value.trim();
@@ -636,11 +643,22 @@ async function refreshUsersTable(){
     var rows = result.users.map(function(u){
       return '<tr><td>'+escapeHtml(u.siteName)+'</td><td>'+escapeHtml(u.id)+'</td>'+
         '<td>'+areaStatCell(u.common)+'</td><td>'+areaStatCell(u.unit)+'</td>'+
-        '<td>'+escapeHtml((u.createdAt||'').slice(0,10))+'</td></tr>';
+        '<td>'+escapeHtml((u.createdAt||'').slice(0,10))+'</td>'+
+        '<td><button type="button" class="haza-btn haza-btn--outline act-view-report" data-site-id="'+escapeHtml(u.siteId)+'" data-site-name="'+escapeHtml(u.siteName)+'">보고서 보기</button></td></tr>';
     }).join('');
-    document.querySelector('#usersTable tbody').innerHTML = rows || '<tr><td colspan="5">등록된 사업소 계정이 없습니다.</td></tr>';
+    document.querySelector('#usersTable tbody').innerHTML = rows || '<tr><td colspan="6">등록된 사업소 계정이 없습니다.</td></tr>';
   } catch(e){
-    document.querySelector('#usersTable tbody').innerHTML = '<tr><td colspan="5">불러오기 실패: '+escapeHtml(e.message)+'</td></tr>';
+    document.querySelector('#usersTable tbody').innerHTML = '<tr><td colspan="6">불러오기 실패: '+escapeHtml(e.message)+'</td></tr>';
+  }
+}
+
+async function viewSiteReport(siteId, siteName){
+  try{
+    var metaResult = await apiFetch('/api/site/meta?siteId=' + encodeURIComponent(siteId));
+    var defectsResult = await apiFetch('/api/site/defects?siteId=' + encodeURIComponent(siteId));
+    printReport(buildProgressReportHtml(metaResult.meta.complexName || siteName, defectsResult.defects, metaResult.meta.reportNote));
+  } catch(e){
+    alert('보고서를 불러오지 못했습니다: ' + e.message);
   }
 }
 
@@ -679,6 +697,11 @@ async function init(){
   $('btnLogout').addEventListener('click', logout);
   $('btnLogoutAdmin').addEventListener('click', logout);
   $('btnCreateUser').addEventListener('click', createUser);
+  $('usersTable').addEventListener('click', function(e){
+    var btn = e.target.closest('.act-view-report');
+    if(!btn) return;
+    viewSiteReport(btn.dataset.siteId, btn.dataset.siteName);
+  });
 
   $('btnSaveMeta').addEventListener('click', saveMeta);
   $('commonExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '공용부').then(function(){ e.target.value=''; }); });

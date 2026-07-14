@@ -295,7 +295,7 @@ async function handleGetMeta(env, request, url) {
   var siteId = (auth.role === 'admin' ? url.searchParams.get('siteId') : auth.siteId);
   if (!siteId) return errorResponse(env, 'siteId가 필요합니다.', 400);
   var r = await readJsonFile(env, 'data/sites/' + siteId + '/meta.json');
-  return jsonResponse(env, { meta: r.data || { complexName: '', useApprovalDate: '', inspectionDate: '' } });
+  return jsonResponse(env, { meta: r.data || { complexName: '', useApprovalDate: '', inspectionDate: '', reportNote: '' } });
 }
 
 async function handleSaveMeta(env, request) {
@@ -307,6 +307,7 @@ async function handleSaveMeta(env, request) {
     complexName: String(body.complexName || ''),
     useApprovalDate: String(body.useApprovalDate || ''),
     inspectionDate: String(body.inspectionDate || ''),
+    reportNote: String(body.reportNote || ''),
   };
   await writeJsonFile(env, 'data/sites/' + auth.siteId + '/meta.json', meta, '현장 정보 저장: ' + auth.siteId, r.sha);
   return jsonResponse(env, { ok: true });
