@@ -398,27 +398,6 @@ async function handleGetTemplate(env, request, url) {
   return jsonResponse(env, { contentBase64: fileR.contentB64, fileName: info.fileName || (key + '.xlsx') });
 }
 
-async function handleSetTemplate(env, request) {
-  var auth = await requireAuth(env, request);
-  if (!auth) return errorResponse(env, '로그인이 필요합니다.', 401);
-  var body = await request.json().catch(function () { return {}; });
-  var key = templateAreaKey(String(body.area || ''));
-  if (!key) return errorResponse(env, 'area 값이 올바르지 않습니다.', 400);
-  var contentBase64 = String(body.contentBase64 || '');
-  if (!contentBase64) return errorResponse(env, '파일 내용이 없습니다.', 400);
-  var fileName = String(body.fileName || (key + '.xlsx'));
-
-  var existingFile = await readRawFile(env, 'data/templates/' + key + '.xlsx');
-  await writeRawContent(env, 'data/templates/' + key + '.xlsx', contentBase64, '본사서식 지정(' + key + '): ' + fileName, existingFile.sha);
-
-  var metaR = await readJsonFile(env, 'data/templates/meta.json');
-  var metaAll = metaR.data || {};
-  metaAll[key] = { fileName: fileName, updatedAt: new Date().toISOString(), updatedBy: auth.uid };
-  await writeJsonFile(env, 'data/templates/meta.json', metaAll, '본사서식 메타 갱신(' + key + '): ' + fileName, metaR.sha);
-
-  return jsonResponse(env, { ok: true });
-}
-
 /* ---------- 진입점 ---------- */
 
 export default {
@@ -437,7 +416,6 @@ export default {
       if (url.pathname === '/api/site/defects' && request.method === 'GET') return await handleGetDefects(env, request, url);
       if (url.pathname === '/api/site/defects/import' && request.method === 'POST') return await handleImportDefects(env, request);
       if (url.pathname === '/api/template' && request.method === 'GET') return await handleGetTemplate(env, request, url);
-      if (url.pathname === '/api/template' && request.method === 'POST') return await handleSetTemplate(env, request);
       return errorResponse(env, 'Not found', 404);
     } catch (err) {
       return errorResponse(env, '서버 오류: ' + (err && err.message ? err.message : String(err)), 500);

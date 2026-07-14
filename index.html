@@ -169,7 +169,6 @@
             <table class="haza-table" id="commonImportPreviewTable"><thead></thead><tbody></tbody></table>
           </div>
           <button type="button" id="btnImportCommon" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">가져오기</button>
-          <button type="button" id="btnSetTemplateCommon" class="haza-btn haza-btn--outline" style="margin-top:.8rem;">이 파일을 본사서식으로 지정</button>
         </div>
       </div>
       <div class="haza-import-col">
@@ -189,7 +188,6 @@
             <table class="haza-table" id="unitImportPreviewTable"><thead></thead><tbody></tbody></table>
           </div>
           <button type="button" id="btnImportUnit" class="haza-btn haza-btn--solid" style="margin-top:.8rem;">가져오기</button>
-          <button type="button" id="btnSetTemplateUnit" class="haza-btn haza-btn--outline" style="margin-top:.8rem;">이 파일을 본사서식으로 지정</button>
         </div>
       </div>
     </div>
@@ -348,22 +346,16 @@ var IMPORT_CANDIDATES = {
 var AREA_UI = {
   '공용부': { count:'commonDefectCount', chart:'commonProgressChart', fill:'commonProgressFill', label:'commonProgressLabel',
               mappingArea:'commonImportMappingArea', previewTable:'commonImportPreviewTable', importBtn:'btnImportCommon',
-              downloadTemplateBtn:'btnDownloadTemplateCommon', setTemplateBtn:'btnSetTemplateCommon' },
+              downloadTemplateBtn:'btnDownloadTemplateCommon' },
   '전유부': { count:'unitDefectCount', chart:'unitProgressChart', fill:'unitProgressFill', label:'unitProgressLabel',
               mappingArea:'unitImportMappingArea', previewTable:'unitImportPreviewTable', importBtn:'btnImportUnit',
-              downloadTemplateBtn:'btnDownloadTemplateUnit', setTemplateBtn:'btnSetTemplateUnit' }
+              downloadTemplateBtn:'btnDownloadTemplateUnit' }
 };
 var importState = {
-  '공용부': { workbook:null, fileName:'', rawBase64:'', headers:[], rows:[], detectedCols:{} },
-  '전유부': { workbook:null, fileName:'', rawBase64:'', headers:[], rows:[], detectedCols:{} }
+  '공용부': { workbook:null, fileName:'', headers:[], rows:[], detectedCols:{} },
+  '전유부': { workbook:null, fileName:'', headers:[], rows:[], detectedCols:{} }
 };
 
-function arrayBufferToBase64(buf){
-  var bytes = new Uint8Array(buf);
-  var binary = '';
-  for(var i=0;i<bytes.length;i++) binary += String.fromCharCode(bytes[i]);
-  return btoa(binary);
-}
 function base64ToBlob(base64, mime){
   var binary = atob(base64);
   var bytes = new Uint8Array(binary.length);
@@ -422,23 +414,7 @@ async function handleDefectExcel(file, mode){
   var buf = await file.arrayBuffer();
   st.workbook = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
   st.fileName = file.name;
-  st.rawBase64 = arrayBufferToBase64(buf);
   await loadExcelSheet(guessDataSheetName(st.workbook.SheetNames, mode), mode);
-}
-
-async function setAsTemplate(mode){
-  var st = importState[mode], ui = AREA_UI[mode];
-  if(!st.rawBase64){ alert('먼저 엑셀 파일을 업로드하세요.'); return; }
-  var btn = $(ui.setTemplateBtn);
-  btn.disabled = true;
-  try{
-    await apiFetch('/api/template', { method:'POST', body:{ area: mode, fileName: st.fileName, contentBase64: st.rawBase64 } });
-    alert('"'+st.fileName+'" 파일을 '+mode+' 본사서식으로 지정했습니다.');
-  } catch(e){
-    alert('본사서식 지정 실패: ' + e.message);
-  } finally {
-    btn.disabled = false;
-  }
 }
 
 async function downloadTemplate(mode){
@@ -766,8 +742,6 @@ async function init(){
   $('btnImportUnit').addEventListener('click', function(){ runDefectImport('전유부'); });
   $('btnDownloadTemplateCommon').addEventListener('click', function(){ downloadTemplate('공용부'); });
   $('btnDownloadTemplateUnit').addEventListener('click', function(){ downloadTemplate('전유부'); });
-  $('btnSetTemplateCommon').addEventListener('click', function(){ setAsTemplate('공용부'); });
-  $('btnSetTemplateUnit').addEventListener('click', function(){ setAsTemplate('전유부'); });
   $('btnReportProgress').addEventListener('click', reportProgress);
 
   if(getSession()) await showLoggedInView();
