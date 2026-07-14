@@ -19127,5 +19127,29 @@
     "completed": false,
     "id": 1592,
     "createdAt": "2026-07-14T05:09:56.990Z"
+  },
+  {
+    "dong": "",
+    "ho": "2029",
+    "area": "공용부",
+    "defectType": "센서등불량",
+    "severity": "보통",
+    "foundDate": "2026-07-14",
+    "description": "센서등불량",
+    "completed": true,
+    "id": 1593,
+    "createdAt": "2026-07-14T06:50:06.080Z"
+  },
+  {
+    "dong": "",
+    "ho": "1834",
+    "area": "공용부",
+    "defectType": "상부등불량",
+    "severity": "보통",
+    "foundDate": "2026-07-14",
+    "description": "미완료일 경우 완료일란을 비워주세요",
+    "completed": false,
+    "id": 1594,
+    "createdAt": "2026-07-14T06:50:06.080Z"
   }
 ]
