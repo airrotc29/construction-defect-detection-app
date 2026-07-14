@@ -258,6 +258,14 @@ async function handleCreateUser(env, request) {
   return jsonResponse(env, { ok: true, siteId: siteId });
 }
 
+function areaStat(siteDefects, area) {
+  var list = siteDefects.filter(function (d) { return d.area === area; });
+  var total = list.length;
+  var completed = list.filter(function (d) { return d.completed === true; }).length;
+  var rate = total > 0 ? Math.round((completed / total) * 100) : null;
+  return { total: total, completed: completed, rate: rate };
+}
+
 async function handleListUsers(env, request) {
   var auth = await requireAuth(env, request);
   if (!auth || auth.role !== 'admin') return errorResponse(env, '관리자만 사용할 수 있습니다.', 403);
@@ -267,15 +275,16 @@ async function handleListUsers(env, request) {
   for (var i = 0; i < users.length; i++) {
     var u = users[i];
     if (u.role === 'admin') continue;
-    var defectCount = 0, completedCount = 0;
+    var siteDefects = [];
     try {
       var r = await readJsonFile(env, 'data/sites/' + u.siteId + '/defects.json');
-      var siteDefects = r.data || [];
-      defectCount = siteDefects.length;
-      completedCount = siteDefects.filter(function (d) { return d.completed === true; }).length;
+      siteDefects = r.data || [];
     } catch (e) { /* ignore, show 0 */ }
-    var completionRate = defectCount > 0 ? Math.round((completedCount / defectCount) * 100) : null;
-    list.push({ id: u.id, siteName: u.siteName, siteId: u.siteId, defectCount: defectCount, completedCount: completedCount, completionRate: completionRate, createdAt: u.createdAt });
+    list.push({
+      id: u.id, siteName: u.siteName, siteId: u.siteId, createdAt: u.createdAt,
+      common: areaStat(siteDefects, '공용부'),
+      unit: areaStat(siteDefects, '전유부'),
+    });
   }
   return jsonResponse(env, { users: list });
 }

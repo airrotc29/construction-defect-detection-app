@@ -123,7 +123,7 @@
     <span id="createUserNote" class="haza-note"></span>
     <div class="haza-table-wrap" style="margin-top:1.2rem;">
       <table class="haza-table" id="usersTable">
-        <thead><tr><th>사업소명</th><th>아이디</th><th>등록 하자 건수</th><th>처리완료</th><th>처리율</th><th>생성일</th></tr></thead>
+        <thead><tr><th>사업소명</th><th>아이디</th><th>🏢 공용부분 현황</th><th>🏠 전유부분 현황</th><th>생성일</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -616,16 +616,25 @@ async function createUser(){
     $('createUserNote').textContent = '생성 실패: ' + e.message;
   }
 }
+function areaStatCell(stat){
+  if(!stat.total) return '<span class="haza-note">등록 없음</span>';
+  var rate = stat.rate == null ? 0 : stat.rate;
+  return '<div class="haza-progress-wrap" style="margin:0;min-width:160px;">' +
+    '<div class="haza-progress-bar"><div class="haza-progress-fill" style="width:'+rate+'%;"></div></div>' +
+    '<span class="haza-progress-label">'+stat.completed+'건 / '+stat.total+'건 ('+rate+'%)</span>' +
+  '</div>';
+}
 async function refreshUsersTable(){
   try{
     var result = await apiFetch('/api/admin/users');
     var rows = result.users.map(function(u){
-      var rateText = u.completionRate == null ? '-' : (u.completionRate + '%');
-      return '<tr><td>'+escapeHtml(u.siteName)+'</td><td>'+escapeHtml(u.id)+'</td><td>'+u.defectCount+'건</td><td>'+u.completedCount+'건</td><td>'+rateText+'</td><td>'+escapeHtml((u.createdAt||'').slice(0,10))+'</td></tr>';
+      return '<tr><td>'+escapeHtml(u.siteName)+'</td><td>'+escapeHtml(u.id)+'</td>'+
+        '<td>'+areaStatCell(u.common)+'</td><td>'+areaStatCell(u.unit)+'</td>'+
+        '<td>'+escapeHtml((u.createdAt||'').slice(0,10))+'</td></tr>';
     }).join('');
-    document.querySelector('#usersTable tbody').innerHTML = rows || '<tr><td colspan="6">등록된 사업소 계정이 없습니다.</td></tr>';
+    document.querySelector('#usersTable tbody').innerHTML = rows || '<tr><td colspan="5">등록된 사업소 계정이 없습니다.</td></tr>';
   } catch(e){
-    document.querySelector('#usersTable tbody').innerHTML = '<tr><td colspan="6">불러오기 실패: '+escapeHtml(e.message)+'</td></tr>';
+    document.querySelector('#usersTable tbody').innerHTML = '<tr><td colspan="5">불러오기 실패: '+escapeHtml(e.message)+'</td></tr>';
   }
 }
 
