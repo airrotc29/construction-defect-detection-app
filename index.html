@@ -28,14 +28,9 @@
 
 <p align="center"><strong>에이스종합관리(주)</strong></p>
 
-<p>동/호수(전유부·공용부) 목록을 엑셀로 업로드하고, 현장에서 촬영한 사진·동영상을 <strong>PC 하드디스크의 지정 폴더</strong>에
-동/호수별로 자동 정리 저장하며, 하자를 등록하면 <strong>연차별 하자담보책임 기준</strong>(집합건물법령)에 따라 제척기간
-만료일을 자동 계산해 보여줍니다. 호수별 상세 보고서와 전체 집계 보고서를 생성할 수 있습니다.</p>
-
-<blockquote>
-  <p><strong>현장에서는 휴대폰/태블릿으로 사진·동영상을 촬영해 두었다가, 사무실 PC의 Chrome/Edge에서 이 페이지를 열어
-폴더를 연결한 뒤 일괄 업로드하는 방식을 권장합니다.</strong></p>
-</blockquote>
+<p>이미 만들어둔 하자 목록(엑셀·한글·PDF 등)을 그대로 가져오거나 직접 등록하면, <strong>연차별 하자담보책임
+기준</strong>(집합건물법령)에 따라 제척기간 만료일을 자동 계산해 보여줍니다. 호수별 상세 보고서와 전체 집계
+보고서를 생성할 수 있습니다.</p>
 
 <details class="haza-info">
   <summary>📋 연차별 하자담보책임 기준 안내 <span class="haza-blink">(펼치기)</span></summary>
@@ -113,49 +108,13 @@
   </section>
 
   <section class="haza-card">
-    <h3>2. 저장 폴더 연결</h3>
-    <p class="haza-desc">사진·동영상 원본과 하자 기록이 저장될 PC 폴더를 지정하세요. 동/호수별 하위 폴더가 자동으로 생성됩니다.</p>
-    <button type="button" id="btnConnectFolder" class="haza-btn haza-btn--solid">📁 저장 폴더 선택/재연결</button>
-    <span id="folderStatus" class="haza-note">폴더가 연결되지 않았습니다.</span>
-    <p id="folderUnsupported" class="haza-warn" style="display:none;">
-      이 브라우저는 폴더 저장 기능(File System Access API)을 지원하지 않습니다. 데스크톱 Chrome 또는 Edge로 접속해 주세요.
-    </p>
-  </section>
-
-  <section class="haza-card">
-    <h3>3. 동/호수 목록</h3>
-    <div class="haza-toolbar">
-      <button type="button" id="btnDownloadTemplate" class="haza-btn haza-btn--outline">엑셀 양식 다운로드</button>
-      <label class="haza-file-btn">엑셀 업로드<input type="file" id="unitExcelInput" accept=".xlsx,.xls"></label>
-      <button type="button" id="btnAddUnitManual" class="haza-btn haza-btn--outline">직접 추가</button>
-      <button type="button" id="btnClearUnits" class="haza-btn haza-btn--danger-outline">호수 목록 초기화</button>
-    </div>
-    <div id="unitAddForm" class="haza-grid" style="display:none;">
-      <label>동<input type="text" id="newUnitDong"></label>
-      <label>호수/공용부명<input type="text" id="newUnitHo"></label>
-      <label>구분
-        <select id="newUnitType"><option value="전유부">전유부</option><option value="공용부">공용부</option></select>
-      </label>
-      <label>인도일(키불출일)<input type="date" id="newUnitMoveIn"></label>
-      <button type="button" id="btnSaveUnitManual" class="haza-btn haza-btn--solid">추가</button>
-    </div>
-    <div class="haza-table-wrap">
-      <table class="haza-table" id="unitsTable">
-        <thead><tr><th>동</th><th>호수/공용부명</th><th>구분</th><th>인도일(키불출일)</th><th>비고</th><th></th></tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <datalist id="dongOptions"></datalist>
-    <datalist id="hoOptions"></datalist>
-  </section>
-
-  <section class="haza-card">
-    <h3>4. 엑셀/기존 파일에서 하자 일괄 등록</h3>
+    <h3>2. 엑셀/기존 파일에서 하자 일괄 등록</h3>
     <p class="haza-desc">
-      사업장마다 이미 만들어둔 하자 목록의 서식(열 제목·순서)이 시스템과 달라도, 어떤 열이 어떤 항목에
-      해당하는지만 지정하면 한 번에 가져올 수 있습니다. <b>엑셀(.xlsx/.xls)</b>은 바로 업로드하고,
-      <b>한글(HWP)·PDF·기타 문서</b>는 해당 프로그램에서 표를 <b>블록 선택 → 복사(Ctrl+C)</b>한 뒤 아래
-      붙여넣기 칸에 <b>붙여넣기(Ctrl+V)</b>하면 동일하게 처리됩니다.
+      사업장마다 이미 만들어둔 하자 목록을 시스템 서식에 맞춰 다시 입력할 필요 없이 그대로 가져옵니다.
+      <b>엑셀(.xlsx/.xls)</b>은 바로 업로드하고, <b>한글(HWP)·PDF·기타 문서</b>는 해당 프로그램에서 표를
+      <b>블록 선택 → 복사(Ctrl+C)</b>한 뒤 아래 붙여넣기 칸에 <b>붙여넣기(Ctrl+V)</b>하면 동일하게 처리됩니다.
+      동/호수 열은 자동으로 인식하며, 존속기간(제척기간)은 계산하지 않으므로 필요 시 가져온 뒤 "3. 하자
+      등록"에서 개별 항목을 열어 존속기간을 지정해 주세요.
     </p>
     <div class="haza-import-columns">
       <div class="haza-import-col">
@@ -192,36 +151,9 @@
     <span id="defectImportFileNote" class="haza-note"></span>
 
     <div id="defectImportMappingArea" style="display:none; margin-top:1rem;">
-      <p class="haza-desc">가져오기 대상: <span id="importModeLabel" class="haza-badge badge-mild"></span> — 아래에서
-      시스템 항목별로 업로드한 파일의 어느 열을 사용할지 지정하세요. 매핑하지 않은 항목은 오른쪽의 기본값이
-      전체 행에 일괄 적용됩니다.</p>
-      <div class="haza-table-wrap">
-        <table class="haza-table">
-          <thead><tr><th>시스템 항목</th><th>파일의 열(매핑)</th><th>매핑 안 할 경우 기본값</th></tr></thead>
-          <tbody>
-            <tr><td>동 <span class="req">(동/호수 중 최소 하나 필요)</span></td><td><select id="mapDong" class="import-map-col"></select></td><td>-</td></tr>
-            <tr><td>호수/공용부명</td><td><select id="mapHo" class="import-map-col"></select></td><td>-</td></tr>
-            <tr><td>존속기간 구분 <span class="req">(필수)</span></td><td><select id="mapYearClass" class="import-map-col"></select></td>
-              <td><select id="defaultYearClass">
-                <option value="finish2">2년·마감공사</option>
-                <option value="functional3">3년·설비·목공사·창호·조경</option>
-                <option value="structural5">5년·구조·안전</option>
-                <option value="pre5">5년·기산일 이전 발생</option>
-                <option value="major10">10년·주요구조부·지반</option>
-              </select></td></tr>
-            <tr><td>하자유형/내용</td><td><select id="mapDefectType" class="import-map-col"></select></td><td>미분류</td></tr>
-            <tr><td>심각도</td><td><select id="mapSeverity" class="import-map-col"></select></td>
-              <td><select id="defaultSeverity"><option value="경미">경미</option><option value="보통" selected>보통</option><option value="심각">심각</option></select></td></tr>
-            <tr><td>발견일</td><td><select id="mapFoundDate" class="import-map-col"></select></td><td><input type="date" id="defaultFoundDate"></td></tr>
-            <tr><td>설명/비고</td><td><select id="mapDescription" class="import-map-col"></select></td><td>-</td></tr>
-            <tr id="rowMapMoveIn"><td>인도일(전유부 기산일)</td><td><select id="mapMoveIn" class="import-map-col"></select></td><td>- (미매핑 시 개별 수정 필요)</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <p class="haza-desc">가져오기 대상: <span id="importModeLabel" class="haza-badge badge-mild"></span></p>
 
-      <div id="defectImportValueMapArea"></div>
-
-      <p class="haza-desc" style="margin-top:1rem;">미리보기(첫 5행)</p>
+      <p class="haza-desc">미리보기(첫 5행) — 업로드한 파일의 원본 열입니다.</p>
       <div class="haza-table-wrap">
         <table class="haza-table" id="defectImportPreviewTable"><thead></thead><tbody></tbody></table>
       </div>
@@ -231,10 +163,10 @@
   </section>
 
   <section class="haza-card">
-    <h3>5. 하자 등록(수동 입력)</h3>
+    <h3>3. 하자 등록(수동 입력)</h3>
     <form id="defectForm" class="haza-grid">
-      <label>동<input type="text" id="defDong" list="dongOptions" required></label>
-      <label>호수/공용부명<input type="text" id="defHo" list="hoOptions" required></label>
+      <label>동<input type="text" id="defDong" required></label>
+      <label>호수/공용부명<input type="text" id="defHo" required></label>
       <label>구분
         <select id="defArea"><option value="전유부">전유부</option><option value="공용부">공용부</option></select>
       </label>
@@ -270,8 +202,6 @@
       <label id="defCollapseDateWrap" style="display:none;">멸실·훼손일 <span class="req">(1년 특례 기산일)</span><input type="date" id="defCollapseDate"></label>
       <label class="haza-span2">진행 메모(사건번호, 내용증명 발송번호 등)<input type="text" id="defStageNote"></label>
       <label class="haza-span2">상세 설명<textarea id="defDescription" rows="2"></textarea></label>
-      <label class="haza-span2">사진/동영상 첨부<input type="file" id="defFiles" accept="image/*,video/*" multiple disabled></label>
-      <div class="haza-span2" id="defFilePreview"></div>
       <div class="haza-span2 haza-date-preview" id="defDatePreview"></div>
       <div class="haza-span2">
         <button type="submit" class="haza-btn haza-btn--solid">하자 저장</button>
@@ -281,7 +211,7 @@
   </section>
 
   <section class="haza-card">
-    <h3>6. 하자 목록</h3>
+    <h3>4. 하자 목록</h3>
     <div class="haza-toolbar">
       <input type="text" id="filterUnit" placeholder="동/호수 검색">
       <select id="filterYearClass">
@@ -299,7 +229,7 @@
   </section>
 
   <section class="haza-card">
-    <h3>7. 건설사 내용증명 발송</h3>
+    <h3>5. 건설사 내용증명 발송</h3>
     <p class="haza-desc">
       선택한 하자 항목으로 시공사(또는 시행사) 앞 <b>하자보수 이행 청구서(내용증명) 초안</b>을 생성합니다.
       생성된 문서는 인쇄하여 <b>우체국 내용증명 우편(또는 전자내용증명)</b>으로 직접 발송하세요 — 본 시스템이
@@ -330,7 +260,7 @@
   </section>
 
   <section class="haza-card">
-    <h3>8. 보고서 · 백업</h3>
+    <h3>6. 보고서 · 백업</h3>
     <div class="haza-toolbar">
       <select id="reportUnitSelect"><option value="">호수 선택</option></select>
       <button type="button" id="btnUnitReport" class="haza-btn haza-btn--solid">호수별 보고서 생성</button>
@@ -477,11 +407,12 @@ function addYearsToDate(dateStr, years){
   return d;
 }
 function daysUntil(dateObj){
-  if(!dateObj) return null;
+  if(!dateObj || isNaN(dateObj.getTime())) return null;
   var today = new Date(); today.setHours(0,0,0,0);
   var t = new Date(dateObj); t.setHours(0,0,0,0);
   return Math.round((t-today)/86400000);
 }
+function ycLabel(yc){ return (yc && YEAR_CLASSES[yc]) ? YEAR_CLASSES[yc].label : '미분류(존속기간 미지정)'; }
 function fmtDate(d){
   if(!d) return '';
   if(typeof d === 'string') return d;
@@ -520,122 +451,7 @@ var siteMeta = { complexName:'', useApprovalDate:'', inspectionDate:'' };
 var noticeMeta = { constructorName:'', constructorAddress:'', unionName:'', unionAddress:'', unionRep:'', replyDays:14 };
 var units = [];
 var defects = [];
-var rootHandle = null;
 var editingDefectId = null;
-var pendingFiles = [];
-
-/* ---------- 폴더 연결 ---------- */
-function folderSupported(){ return typeof window.showDirectoryPicker === 'function'; }
-
-function updateFolderStatusUI(connected, name){
-  var statusEl = $('folderStatus');
-  var fileInput = $('defFiles');
-  if(connected){
-    statusEl.textContent = '연결됨: ' + (name || '선택한 폴더');
-    statusEl.style.color = '#1c7c40';
-    fileInput.disabled = false;
-  } else {
-    statusEl.textContent = '폴더가 연결되지 않았습니다. 사진/동영상을 첨부하려면 먼저 폴더를 연결하세요.';
-    statusEl.style.color = '#5a6577';
-    fileInput.disabled = true;
-  }
-}
-
-async function connectFolder(){
-  if(!folderSupported()){
-    $('folderUnsupported').style.display = 'block';
-    return;
-  }
-  try{
-    var handle = await window.showDirectoryPicker({mode:'readwrite'});
-    rootHandle = handle;
-    await idbPut('kv', {key:'rootHandle', handle:handle});
-    updateFolderStatusUI(true, handle.name);
-    renderDefectsList();
-  }catch(err){
-    if(err && err.name !== 'AbortError') alert('폴더 연결에 실패했습니다: ' + err.message);
-  }
-}
-
-async function tryRestoreFolder(){
-  if(!folderSupported()){ $('folderUnsupported').style.display = 'block'; return; }
-  try{
-    var row = await idbGet('kv', 'rootHandle');
-    if(row && row.handle){
-      var perm = await row.handle.queryPermission({mode:'readwrite'});
-      if(perm === 'granted'){
-        rootHandle = row.handle;
-        updateFolderStatusUI(true, row.handle.name);
-        renderDefectsList();
-      } else {
-        updateFolderStatusUI(false);
-        $('folderStatus').textContent = '이전에 연결한 폴더(' + row.handle.name + ')가 있습니다. "저장 폴더 선택/재연결" 버튼으로 권한을 다시 확인하세요.';
-      }
-    }
-  }catch(err){ /* 폴더 핸들 복원 실패는 무시하고 재연결을 요구 */ }
-}
-
-async function getSubDir(root, parts){
-  var dir = root;
-  for(var i=0;i<parts.length;i++){
-    dir = await dir.getDirectoryHandle(sanitizeName(parts[i]), {create:true});
-  }
-  return dir;
-}
-
-async function saveFileToDisk(dong, ho, area, file, defectId, idx, role){
-  role = role || 'defect';
-  var groupParts = area === '공용부' ? ['공용부', sanitizeName(ho || dong || '공용')] : [sanitizeName(dong || '동미상'), sanitizeName(ho || '호미상')];
-  if(role === 'repair') groupParts = groupParts.concat(['보수완료']);
-  var dir = await getSubDir(rootHandle, groupParts);
-  var storedName = defectId + '_' + idx + '_' + sanitizeName(file.name);
-  var fh = await dir.getFileHandle(storedName, {create:true});
-  var w = await fh.createWritable();
-  await w.write(file);
-  await w.close();
-  return {
-    name:file.name, storedName:storedName, path:groupParts.concat([storedName]),
-    size:file.size, type:file.type, kind: (file.type||'').indexOf('video') === 0 ? 'video' : 'photo',
-    role: role
-  };
-}
-
-async function readFileFromDisk(pathParts){
-  var dir = rootHandle;
-  for(var i=0;i<pathParts.length-1;i++){ dir = await dir.getDirectoryHandle(pathParts[i]); }
-  var fh = await dir.getFileHandle(pathParts[pathParts.length-1]);
-  return await fh.getFile();
-}
-
-async function writeBackupJson(){
-  if(!rootHandle) return;
-  try{
-    var fh = await rootHandle.getFileHandle('_하자기록.json', {create:true});
-    var w = await fh.createWritable();
-    await w.write(JSON.stringify({siteMeta:siteMeta, units:units, defects:defects}, null, 2));
-    await w.close();
-  }catch(err){ /* 백업 파일 기록 실패는 조용히 무시(수동 백업 버튼으로 대체 가능) */ }
-}
-
-function makeThumb(file, maxDim){
-  maxDim = maxDim || 240;
-  return new Promise(function(resolve){
-    if((file.type||'').indexOf('image') !== 0){ resolve(null); return; }
-    var img = new Image();
-    var url = URL.createObjectURL(file);
-    img.onload = function(){
-      var w = img.width, h = img.height;
-      if(w > h){ if(w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; } }
-      else { if(h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; } }
-      var c = document.createElement('canvas'); c.width=w; c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      URL.revokeObjectURL(url);
-      resolve(c.toDataURL('image/jpeg',0.72));
-    };
-    img.onerror = function(){ URL.revokeObjectURL(url); resolve(null); };
-    img.src = url;
-  });
-}
 
 /* ---------- 연차구분 / 하자유형 select ---------- */
 function refreshDefectTypeOptions(){
@@ -688,136 +504,25 @@ function updateDatePreview(){
   el.innerHTML = html;
 }
 
-/* ---------- 동/호 매칭, datalist ---------- */
-function refreshUnitDatalists(){
-  var dongSet = {};
-  units.forEach(function(u){ dongSet[u.dong] = true; });
-  $('dongOptions').innerHTML = Object.keys(dongSet).map(function(d){ return '<option value="'+escapeHtml(d)+'">'; }).join('');
-  updateHoOptions();
-}
-function updateHoOptions(){
-  var dong = $('defDong').value.trim();
-  var matches = units.filter(function(u){ return !dong || u.dong === dong; });
-  $('hoOptions').innerHTML = matches.map(function(u){ return '<option value="'+escapeHtml(u.ho)+'">'; }).join('');
-}
-function tryMatchUnit(){
-  var dong = $('defDong').value.trim(), ho = $('defHo').value.trim();
-  var u = units.find(function(x){ return x.dong === dong && x.ho === ho; });
-  if(u){
-    $('defArea').value = u.type;
-    $('defMoveIn').value = u.moveInDate || '';
-    toggleMoveInVisibility();
-  }
-  updateDatePreview();
-}
-
-/* ---------- units 렌더 ---------- */
-function renderUnitsTable(){
-  var tbody = document.querySelector('#unitsTable tbody');
-  tbody.innerHTML = units.map(function(u){
-    return '<tr data-id="'+u.id+'">' +
-      '<td>'+escapeHtml(u.dong)+'</td>' +
-      '<td>'+escapeHtml(u.ho)+'</td>' +
-      '<td>'+escapeHtml(u.type)+'</td>' +
-      '<td><input type="date" class="unit-movein" value="'+escapeHtml(u.moveInDate||'')+'" '+(u.type==='공용부'?'disabled':'')+'></td>' +
-      '<td>'+escapeHtml(u.note||'')+'</td>' +
-      '<td><button type="button" class="unit-del">삭제</button></td>' +
-    '</tr>';
-  }).join('');
-  tbody.querySelectorAll('.unit-movein').forEach(function(inp){
-    inp.addEventListener('change', function(){
-      var id = Number(inp.closest('tr').dataset.id);
-      var u = units.find(function(x){ return x.id === id; });
-      if(u){ u.moveInDate = inp.value; idbPut('units', u); }
-    });
-  });
-  tbody.querySelectorAll('.unit-del').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var id = Number(btn.closest('tr').dataset.id);
-      if(!confirm('이 호수/공용부 항목을 삭제하시겠습니까?')) return;
-      idbDelete('units', id).then(function(){
-        units = units.filter(function(x){ return x.id !== id; });
-        renderUnitsTable(); refreshUnitDatalists(); refreshReportUnitSelect();
-      });
-    });
-  });
-  refreshUnitDatalists();
-  refreshReportUnitSelect();
-}
-
-function upsertUnit(u){
-  var existing = units.find(function(x){ return x.dong === u.dong && x.ho === u.ho; });
-  if(existing){
-    existing.type = u.type; existing.note = u.note;
-    if(u.moveInDate) existing.moveInDate = u.moveInDate;
-    return idbPut('units', existing);
-  }
-  return idbPut('units', u).then(function(id){ u.id = id; units.push(u); });
-}
-
-/* ---------- 엑셀 업로드 ---------- */
 function findKey(sampleRow, candidates){
   return Object.keys(sampleRow).find(function(k){
     var norm = String(k).replace(/\s/g,'');
     return candidates.some(function(c){ return norm.indexOf(c) !== -1; });
   });
 }
-async function handleUnitExcel(file){
-  var buf = await file.arrayBuffer();
-  var wb = XLSX.read(new Uint8Array(buf), {type:'array', cellDates:true});
-  var sheet = wb.Sheets[wb.SheetNames[0]];
-  var rows = XLSX.utils.sheet_to_json(sheet, {defval:''});
-  if(!rows.length){ alert('엑셀에서 데이터를 찾을 수 없습니다.'); return; }
-  var dongKey = findKey(rows[0], ['동']);
-  var hoKey = findKey(rows[0], ['호수','호']);
-  var typeKey = findKey(rows[0], ['구분']);
-  var moveInKey = findKey(rows[0], ['키불출','입주','인도']);
-  var noteKey = findKey(rows[0], ['비고']);
-  var jobs = [];
-  rows.forEach(function(row){
-    var dong = String(dongKey ? row[dongKey] : '').trim();
-    var ho = String(hoKey ? row[hoKey] : '').trim();
-    if(!dong && !ho) return;
-    var typeRaw = String(typeKey ? row[typeKey] : '').trim();
-    var type = typeRaw.indexOf('공용') !== -1 ? '공용부' : '전유부';
-    var moveIn = normalizeExcelDate(moveInKey ? row[moveInKey] : '');
-    var note = String(noteKey ? row[noteKey] : '').trim();
-    jobs.push(upsertUnit({dong:dong, ho:ho, type:type, moveInDate:moveIn, note:note}));
-  });
-  await Promise.all(jobs);
-  renderUnitsTable();
-  alert(jobs.length + '건의 호수/공용부 정보를 반영했습니다.');
-}
-function downloadTemplate(){
-  var wsData = [
-    ['동','호수','구분(전유부/공용부)','인도일(키불출일, 전유부만 YYYY-MM-DD)','비고'],
-    ['101','1001','전유부','2024-03-15',''],
-    ['101','지하주차장','공용부','','']
-  ];
-  var ws = XLSX.utils.aoa_to_sheet(wsData);
-  var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, '호수목록');
-  XLSX.writeFile(wb, '호수목록_양식.xlsx');
-}
 
-/* ---------- 하자 엑셀/붙여넣기 일괄 등록 ---------- */
-var IMPORT_FIELD_DEFS = [
-  {key:'dong', label:'동', candidates:['동']},
-  {key:'ho', label:'호수/공용부명', candidates:['호수','호']},
-  {key:'yearClass', label:'존속기간 구분', candidates:['연차','존속기간','기간구분','하자구분','하자분류','분류']},
-  {key:'defectType', label:'하자유형/내용', candidates:['하자유형','하자내용','유형','내용']},
-  {key:'severity', label:'심각도', candidates:['심각도','등급','중요도']},
-  {key:'foundDate', label:'발견일', candidates:['발견일','점검일','확인일','일자','날짜']},
-  {key:'description', label:'설명/비고', candidates:['설명','비고','상세']},
-  {key:'moveIn', label:'인도일(전유부 기산일)', candidates:['인도','키불출','입주']}
-];
+/* ---------- 하자 엑셀/붙여넣기 일괄 등록 (매핑 없이 자동 인식, 존속기간 계산 없음) ---------- */
+var IMPORT_CANDIDATES = {
+  dong: ['동'], ho: ['호수','호'],
+  defectType: ['하자유형','하자내용','유형','내용'],
+  severity: ['심각도','등급','중요도'],
+  foundDate: ['발견일','점검일','확인일','일자','날짜'],
+  description: ['설명','비고','상세']
+};
 var importRows = [];
 var importHeaders = [];
-var importValueMaps = {};
+var importDetectedCols = {};
 var importMode = '전유부';
-
-function capitalize(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
-function mapSelId(key){ return 'map' + capitalize(key); }
 
 function parsePastedTable(text, delimMode){
   var lines = text.replace(/\r\n/g,'\n').replace(/\r/g,'\n').split('\n').filter(function(l){ return l.trim().length; });
@@ -897,106 +602,35 @@ async function handleDefectPaste(mode, textareaId){
 async function setImportData(headers, rows, note){
   importHeaders = headers;
   importRows = rows;
-  importValueMaps = {};
+  importDetectedCols = {};
+  Object.keys(IMPORT_CANDIDATES).forEach(function(key){ importDetectedCols[key] = findKey(rows[0], IMPORT_CANDIDATES[key]); });
   $('defectImportFileNote').textContent = note;
   $('defectImportMappingArea').style.display = 'block';
   $('importModeLabel').textContent = importMode;
-  $('rowMapMoveIn').style.display = importMode === '공용부' ? 'none' : '';
-  renderImportColumnMappers();
-  await tryLoadSavedMapping();
-  onImportMappingChange();
+  renderImportPreview();
 }
 
-function renderImportColumnMappers(){
-  IMPORT_FIELD_DEFS.forEach(function(f){
-    var sel = $(mapSelId(f.key));
-    sel.innerHTML = '<option value="">(매핑 안 함)</option>' + importHeaders.map(function(h){ return '<option value="'+escapeHtml(h)+'">'+escapeHtml(h)+'</option>'; }).join('');
-    var guess = findKey(importRows[0], f.candidates);
-    if(guess) sel.value = guess;
-  });
-}
-
-function uniqueValues(rows, col, cap){
-  cap = cap || 40;
-  var seen = {}; var out = []; var truncated = false;
-  for(var i=0;i<rows.length;i++){
-    var v = String(rows[i][col] == null ? '' : rows[i][col]).trim();
-    if(seen[v]) continue;
-    seen[v] = true;
-    if(out.length >= cap){ truncated = true; break; }
-    out.push(v);
-  }
-  return { values: out, truncated: truncated };
-}
-
-function guessValueMap(fieldKey, rawValue){
+function guessSeverity(rawValue){
   var v = String(rawValue||'');
-  if(fieldKey === 'severity'){
-    if(/심각|중대|긴급/.test(v)) return '심각';
-    if(/경미|미세/.test(v)) return '경미';
-    return '보통';
-  }
-  if(fieldKey === 'yearClass'){
-    if(/10|주요구조|지반/.test(v)) return 'major10';
-    if(/이전|기산일\s*전/.test(v)) return 'pre5';
-    if(/5|구조|안전|방수|철콘|철골|조적/.test(v)) return 'structural5';
-    if(/3|설비|창호|조경|목공/.test(v)) return 'functional3';
-    if(/2|마감/.test(v)) return 'finish2';
-    return 'finish2';
-  }
-  return '';
-}
-
-function renderValueMapUI(){
-  var html = '';
-  ['yearClass','severity'].forEach(function(fieldKey){
-    var col = $(mapSelId(fieldKey)).value;
-    if(!col) return;
-    var uniq = uniqueValues(importRows, col);
-    var targetOptions = fieldKey === 'yearClass' ? ['finish2','functional3','structural5','pre5','major10'].map(function(k){ return [k, YEAR_CLASSES[k].label]; })
-      : [['경미','경미'],['보통','보통'],['심각','심각']];
-    var fieldLabel = IMPORT_FIELD_DEFS.find(function(f){ return f.key === fieldKey; }).label;
-    html += '<div class="haza-card" style="margin-top:.8rem;"><h4>"'+escapeHtml(fieldLabel)+'" 값 매핑 ('+escapeHtml(col)+' 열)</h4>';
-    if(uniq.truncated) html += '<p class="haza-warn">고유값이 많아 상위 '+uniq.values.length+'개만 표시합니다. 나머지 값은 기본값으로 처리됩니다.</p>';
-    uniq.values.forEach(function(v){
-      var existing = importValueMaps[fieldKey] && importValueMaps[fieldKey][v];
-      var guessTarget = existing || guessValueMap(fieldKey, v);
-      html += '<div class="haza-checkbox" style="margin:.3rem 0;">"'+escapeHtml(v||'(빈값)')+'" &rarr; <select class="import-value-map" data-field="'+fieldKey+'" data-raw="'+escapeHtml(v)+'">' +
-        targetOptions.map(function(o){ return '<option value="'+o[0]+'" '+(o[0]===guessTarget?'selected':'')+'>'+o[1]+'</option>'; }).join('') +
-        '</select></div>';
-    });
-    html += '</div>';
-  });
-  $('defectImportValueMapArea').innerHTML = html;
-  document.querySelectorAll('.import-value-map').forEach(function(sel){
-    var field = sel.dataset.field, raw = sel.dataset.raw;
-    importValueMaps[field] = importValueMaps[field] || {};
-    importValueMaps[field][raw] = sel.value;
-    sel.addEventListener('change', function(){
-      importValueMaps[field][raw] = sel.value;
-      renderImportPreview();
-    });
-  });
+  if(/심각|중대|긴급/.test(v)) return '심각';
+  if(/경미|미세/.test(v)) return '경미';
+  return '보통';
 }
 
 function getMappedDefect(row){
-  var dongCol = $('mapDong').value, hoCol = $('mapHo').value;
-  var ycCol = $('mapYearClass').value;
-  var typeCol = $('mapDefectType').value, sevCol = $('mapSeverity').value;
-  var foundCol = $('mapFoundDate').value, descCol = $('mapDescription').value, moveInCol = $('mapMoveIn').value;
-
-  var yearClass = ycCol ? ((importValueMaps.yearClass && importValueMaps.yearClass[String(row[ycCol]||'').trim()]) || $('defaultYearClass').value) : $('defaultYearClass').value;
-  var severity = sevCol ? ((importValueMaps.severity && importValueMaps.severity[String(row[sevCol]||'').trim()]) || $('defaultSeverity').value) : $('defaultSeverity').value;
-  var foundDate = foundCol ? (normalizeExcelDate(row[foundCol]) || $('defaultFoundDate').value || todayStr()) : ($('defaultFoundDate').value || todayStr());
-  var moveIn = (importMode === '전유부' && moveInCol) ? normalizeExcelDate(row[moveInCol]) : '';
+  var dongCol = importDetectedCols.dong, hoCol = importDetectedCols.ho;
+  var typeCol = importDetectedCols.defectType, sevCol = importDetectedCols.severity;
+  var foundCol = importDetectedCols.foundDate, descCol = importDetectedCols.description;
+  var severity = sevCol ? guessSeverity(row[sevCol]) : '보통';
+  var foundDate = foundCol ? (normalizeExcelDate(row[foundCol]) || todayStr()) : todayStr();
   var defectType = typeCol ? String(row[typeCol]||'').trim() : '';
   var description = descCol ? String(row[descCol]||'').trim() : '';
 
   return {
     dong: dongCol ? String(row[dongCol]||'').trim() : '',
     ho: hoCol ? String(row[hoCol]||'').trim() : '',
-    area: importMode, yearClass: yearClass, defectType: defectType, severity: severity,
-    foundDate: foundDate, description: description || defectType, moveIn: moveIn
+    area: importMode, defectType: defectType, severity: severity,
+    foundDate: foundDate, description: description || defectType
   };
 }
 
@@ -1012,88 +646,35 @@ function renderImportPreview(){
   $('btnImportDefects').textContent = '전체 ' + importRows.length + '건 가져오기';
 }
 
-function onImportMappingChange(){
-  renderValueMapUI();
-  renderImportPreview();
-}
-
-function headerSignature(headers){ return headers.slice().sort().join('|'); }
-
-async function saveImportMappingForReuse(){
-  var sig = headerSignature(importHeaders);
-  var mapping = {};
-  IMPORT_FIELD_DEFS.forEach(function(f){ mapping[f.key] = $(mapSelId(f.key)).value; });
-  await idbPut('kv', {key:'defectImportMapping:'+importMode+':'+sig, mapping:mapping, valueMaps: importValueMaps});
-}
-async function tryLoadSavedMapping(){
-  var sig = headerSignature(importHeaders);
-  var saved = await idbGet('kv', 'defectImportMapping:' + importMode + ':' + sig);
-  if(saved){
-    IMPORT_FIELD_DEFS.forEach(function(f){ if(saved.mapping[f.key] !== undefined) $(mapSelId(f.key)).value = saved.mapping[f.key]; });
-    importValueMaps = saved.valueMaps || {};
-  }
-}
-
 async function runDefectImport(){
   if(!importRows.length) return;
-  if(!$('mapDong').value && !$('mapHo').value){ alert('동 또는 호수 열을 최소 하나는 매핑하세요.'); return; }
   var imported = 0, skippedMissingUnit = 0;
   var jobs = [];
   importRows.forEach(function(row){
     var m = getMappedDefect(row);
     if(!m.dong && !m.ho){ skippedMissingUnit++; return; }
-    var base = m.area === '공용부' ? siteMeta.useApprovalDate : m.moveIn;
-    var info = computeExpireInfo(base, m.yearClass, false, '');
     var defect = {
       files: [], createdAt: todayStr(),
-      dong: m.dong, ho: m.ho, area: m.area, moveInDate: m.moveIn || '',
-      yearClass: m.yearClass, basis: YEAR_CLASSES[m.yearClass].basis,
+      dong: m.dong, ho: m.ho, area: m.area, moveInDate: '',
+      yearClass: '', basis: '',
       defectType: m.defectType || '미분류', severity: m.severity, foundDate: m.foundDate,
       stage: 1, stageNote: '', description: m.description || '',
-      baseDate: base || '', normalExpireDate: info.normalExpire ? fmtDate(info.normalExpire) : '',
+      baseDate: '', normalExpireDate: '',
       collapseFlag: false, collapseDate: '', collapseExpireDate: '',
-      expireDate: info.effective ? fmtDate(info.effective) : '',
+      expireDate: '',
       updatedAt: todayStr()
     };
     jobs.push(idbPut('defects', defect).then(function(id){ defect.id = id; defects.push(defect); }));
     imported++;
   });
   await Promise.all(jobs);
-  await saveImportMappingForReuse();
   refreshDefectDependentViews();
-  writeBackupJson();
-  alert('가져오기 완료: ' + imported + '건 등록' + (skippedMissingUnit ? ', 동/호수 누락 ' + skippedMissingUnit + '건 건너뜀' : '') + '\n기산일이 없어 만료일이 계산되지 않은 항목은 목록에서 개별 수정해 주세요.');
-}
-
-/* ---------- 하자 첨부파일 미리보기(등록 전) ---------- */
-async function handleDefFilesChange(fileList){
-  pendingFiles = [];
-  var preview = $('defFilePreview');
-  preview.innerHTML = '처리 중...';
-  var arr = Array.from(fileList);
-  for(var i=0;i<arr.length;i++){
-    var f = arr[i];
-    var thumb = await makeThumb(f);
-    pendingFiles.push({file:f, thumb:thumb});
-  }
-  renderPendingFilePreview();
-}
-function renderPendingFilePreview(){
-  var preview = $('defFilePreview');
-  if(!pendingFiles.length){ preview.innerHTML=''; return; }
-  preview.innerHTML = pendingFiles.map(function(pf, idx){
-    if(pf.thumb) return '<img class="haza-thumb" src="'+pf.thumb+'" title="'+escapeHtml(pf.file.name)+'">';
-    return '<span class="haza-file-chip">🎬 '+escapeHtml(pf.file.name)+'</span>';
-  }).join('');
+  alert('가져오기 완료: ' + imported + '건 등록' + (skippedMissingUnit ? ', 동/호수 누락 ' + skippedMissingUnit + '건 건너뜀' : '') + '\n존속기간(제척기간)은 계산되지 않았습니다 — 필요 시 "3. 하자 등록"에서 개별 항목을 열어 존속기간을 지정해 주세요.');
 }
 
 /* ---------- 하자 등록/수정 ---------- */
 async function saveDefect(ev){
   ev.preventDefault();
-  if(!rootHandle && (pendingFiles.length || $('defFiles').files.length)){
-    alert('사진/동영상을 저장하려면 먼저 폴더를 연결하세요.');
-    return;
-  }
   var area = $('defArea').value;
   var moveIn = $('defMoveIn').value;
   var base = area === '공용부' ? siteMeta.useApprovalDate : moveIn;
@@ -1110,7 +691,7 @@ async function saveDefect(ev){
   var dong = $('defDong').value.trim(), ho = $('defHo').value.trim();
 
   var defect = editingDefectId ? defects.find(function(d){ return d.id === editingDefectId; }) : {
-    files: [], createdAt: todayStr()
+    createdAt: todayStr()
   };
   defect.dong = dong; defect.ho = ho; defect.area = area; defect.moveInDate = moveIn;
   defect.yearClass = yc; defect.basis = YEAR_CLASSES[yc].basis; defect.defectType = defectType;
@@ -1126,23 +707,7 @@ async function saveDefect(ev){
   var savedId = await idbPut('defects', defect);
   defect.id = savedId;
 
-  if(pendingFiles.length){
-    var newFiles = [];
-    for(var i=0;i<pendingFiles.length;i++){
-      try{
-        var saved = await saveFileToDisk(dong, ho, area, pendingFiles[i].file, defect.id, defect.files.length + i);
-        if(pendingFiles[i].thumb) saved.thumb = pendingFiles[i].thumb;
-        newFiles.push(saved);
-      }catch(err){ alert('파일 저장 실패: ' + pendingFiles[i].file.name + ' - ' + err.message); }
-    }
-    defect.files = defect.files.concat(newFiles);
-    await idbPut('defects', defect);
-  }
-
   if(!editingDefectId){ defects.push(defect); } else { editingDefectId = null; }
-  pendingFiles = [];
-  $('defFiles').value = '';
-  $('defFilePreview').innerHTML = '';
   $('btnCancelEdit').style.display = 'none';
   document.getElementById('defectForm').reset();
   $('defFoundDate').value = todayStr();
@@ -1150,7 +715,6 @@ async function saveDefect(ev){
   toggleMoveInVisibility();
   toggleCollapseDateVisibility();
   refreshDefectDependentViews();
-  writeBackupJson();
 }
 
 function loadDefectIntoForm(id){
@@ -1159,8 +723,9 @@ function loadDefectIntoForm(id){
   editingDefectId = id;
   $('defDong').value = d.dong; $('defHo').value = d.ho; $('defArea').value = d.area;
   $('defMoveIn').value = d.moveInDate || '';
-  $('defYearClass').value = d.yearClass; refreshDefectTypeOptions();
-  var isPreset = YEAR_CLASSES[d.yearClass].items.indexOf(d.defectType) !== -1;
+  if(d.yearClass && YEAR_CLASSES[d.yearClass]) $('defYearClass').value = d.yearClass;
+  refreshDefectTypeOptions();
+  var isPreset = d.yearClass && YEAR_CLASSES[d.yearClass] ? YEAR_CLASSES[d.yearClass].items.indexOf(d.defectType) !== -1 : false;
   $('defTypeSelect').value = isPreset ? d.defectType : '__other__';
   toggleTypeOther();
   if(!isPreset) $('defTypeOther').value = d.defectType;
@@ -1174,46 +739,10 @@ function loadDefectIntoForm(id){
 }
 
 async function deleteDefect(id){
-  if(!confirm('이 하자 기록을 삭제하시겠습니까? (저장된 사진/동영상 파일은 폴더에 그대로 남습니다)')) return;
+  if(!confirm('이 하자 기록을 삭제하시겠습니까?')) return;
   await idbDelete('defects', id);
   defects = defects.filter(function(d){ return d.id !== id; });
   refreshDefectDependentViews();
-}
-
-async function openSavedFile(pathParts){
-  if(!rootHandle){ alert('폴더가 연결되어 있지 않아 파일을 열 수 없습니다. 폴더를 다시 연결하세요.'); return; }
-  try{
-    var file = await readFileFromDisk(pathParts);
-    var url = URL.createObjectURL(file);
-    window.open(url, '_blank');
-  }catch(err){ alert('파일을 열 수 없습니다: ' + err.message); }
-}
-
-async function handleRepairFiles(defectId, fileList){
-  if(!rootHandle){ alert('폴더가 연결되어 있지 않습니다. 보수완료 사진/동영상을 저장하려면 먼저 폴더를 연결하세요.'); return; }
-  var d = defects.find(function(x){ return x.id === defectId; });
-  if(!d) return;
-  var arr = Array.from(fileList);
-  var newFiles = [];
-  for(var i=0;i<arr.length;i++){
-    var f = arr[i];
-    try{
-      var saved = await saveFileToDisk(d.dong, d.ho, d.area, f, d.id, (d.files||[]).length + newFiles.length, 'repair');
-      var thumb = await makeThumb(f);
-      if(thumb) saved.thumb = thumb;
-      newFiles.push(saved);
-    }catch(err){ alert('보수완료 사진 저장 실패: ' + f.name + ' - ' + err.message); }
-  }
-  if(!newFiles.length) return;
-  d.files = (d.files||[]).concat(newFiles);
-  if(d.stage < 5){
-    d.stage = 5;
-    d.stageNote = (d.stageNote ? d.stageNote + ' / ' : '') + '보수완료 사진 첨부(' + todayStr() + ')';
-  }
-  d.updatedAt = todayStr();
-  await idbPut('defects', d);
-  refreshDefectDependentViews();
-  writeBackupJson();
 }
 
 /* ---------- 하자 목록 렌더 ---------- */
@@ -1235,7 +764,7 @@ function filteredDefects(){
     if(sevQ && d.severity !== sevQ) return false;
     if(urgentOnly){
       var dday = daysUntil(new Date(d.expireDate));
-      if(!(dday <= 90)) return false;
+      if(dday == null || dday > 90) return false;
     }
     return true;
   }).sort(function(a,b){ return new Date(a.expireDate) - new Date(b.expireDate); });
@@ -1251,34 +780,22 @@ function renderDefectsList(){
   if(!list.length){ el.innerHTML = '<p class="haza-desc">등록된 하자가 없습니다.</p>'; return; }
   el.innerHTML = list.map(function(d){
     var dday = daysUntil(new Date(d.expireDate));
-    function fileChip(f){
-      if(f.thumb) return '<img class="haza-thumb" src="'+f.thumb+'" title="'+escapeHtml(f.name)+'" data-path=\''+JSON.stringify(f.path)+'\'>';
-      return '<span class="haza-file-chip" data-path=\''+JSON.stringify(f.path)+'\'>🎬 '+escapeHtml(f.name)+'</span>';
-    }
-    var defectFiles = (d.files||[]).filter(function(f){ return f.role !== 'repair'; });
-    var repairFiles = (d.files||[]).filter(function(f){ return f.role === 'repair'; });
-    var filesHtml =
-      (defectFiles.length ? '<div class="haza-file-group-label">하자 사진/동영상</div><div>'+defectFiles.map(fileChip).join('')+'</div>' : '') +
-      (repairFiles.length ? '<div class="haza-file-group-label repair">보수완료 사진/동영상</div><div>'+repairFiles.map(fileChip).join('')+'</div>' : '');
     return '<div class="haza-defect-item" data-id="'+d.id+'">' +
       '<div class="haza-defect-head">' +
         '<strong>'+escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+'</strong> (' + escapeHtml(d.area) + ')' +
         '<span class="haza-badge '+severityBadgeClass(d.severity)+'">'+escapeHtml(d.severity)+'</span>' +
-        '<span class="haza-badge badge-mild">'+escapeHtml(YEAR_CLASSES[d.yearClass].label)+'</span>' +
+        '<span class="haza-badge badge-mild">'+escapeHtml(ycLabel(d.yearClass))+'</span>' +
         ddayBadge(dday) +
-        (repairFiles.length ? '<span class="haza-badge badge-dday-ok">보수완료 사진 있음</span>' : '') +
       '</div>' +
       '<div class="haza-defect-body">' +
-        '<div><b>하자유형</b>: '+escapeHtml(d.defectType)+' &nbsp; <b>근거</b>: '+escapeHtml(d.basis)+'</div>' +
-        '<div><b>기산일</b>: '+escapeHtml(d.baseDate)+' &nbsp; <b>만료예정일</b>: '+escapeHtml(d.expireDate)+' &nbsp; <b>발견일</b>: '+escapeHtml(d.foundDate)+'</div>' +
+        '<div><b>하자유형</b>: '+escapeHtml(d.defectType)+(d.basis ? ' &nbsp; <b>근거</b>: '+escapeHtml(d.basis) : '')+'</div>' +
+        '<div>'+(d.baseDate ? '<b>기산일</b>: '+escapeHtml(d.baseDate)+' &nbsp; ' : '')+(d.expireDate ? '<b>만료예정일</b>: '+escapeHtml(d.expireDate)+' &nbsp; ' : '')+'<b>발견일</b>: '+escapeHtml(d.foundDate)+'</div>' +
         (d.collapseFlag ? '<div class="haza-warn">⚠ 건물 멸실·훼손 특례 적용 — 멸실·훼손일: '+escapeHtml(d.collapseDate)+', 1년 특례 만료일: '+escapeHtml(d.collapseExpireDate)+' (통상 만료일: '+escapeHtml(d.normalExpireDate)+', 집합건물법 제9조의2 제3항)</div>' : '') +
         (d.description ? '<div><b>설명</b>: '+escapeHtml(d.description)+'</div>' : '') +
         (d.stageNote ? '<div><b>진행메모</b>: '+escapeHtml(d.stageNote)+'</div>' : '') +
-        (filesHtml ? '<div style="margin-top:.4rem;">'+filesHtml+'</div>' : '') +
       '</div>' +
       '<div class="haza-defect-actions">' +
         '<label>처리단계 <select class="stage-select">' + STAGES.map(function(s){ return '<option value="'+s.n+'" '+(s.n===d.stage?'selected':'')+'>'+s.label+'</option>'; }).join('') + '</select></label>' +
-        '<label class="haza-file-btn'+(rootHandle?'':' haza-file-btn--disabled')+'">보수완료 사진/동영상 추가<input type="file" class="repair-file-input" accept="image/*,video/*" multiple '+(rootHandle?'':'disabled')+'></label>' +
         '<button type="button" class="act-edit">수정</button>' +
         '<button type="button" class="act-delete">삭제</button>' +
       '</div>' +
@@ -1290,18 +807,10 @@ function renderDefectsList(){
     itemEl.querySelector('.stage-select').addEventListener('change', function(e){
       var d = defects.find(function(x){ return x.id === id; });
       d.stage = Number(e.target.value); d.updatedAt = todayStr();
-      idbPut('defects', d).then(function(){ refreshDefectDependentViews(); writeBackupJson(); });
-    });
-    itemEl.querySelector('.repair-file-input').addEventListener('change', function(e){
-      if(e.target.files.length) handleRepairFiles(id, e.target.files);
-      e.target.value = '';
+      idbPut('defects', d).then(function(){ refreshDefectDependentViews(); });
     });
     itemEl.querySelector('.act-edit').addEventListener('click', function(){ loadDefectIntoForm(id); });
     itemEl.querySelector('.act-delete').addEventListener('click', function(){ deleteDefect(id); });
-    itemEl.querySelectorAll('[data-path]').forEach(function(fe){
-      fe.style.cursor = 'pointer';
-      fe.addEventListener('click', function(){ openSavedFile(JSON.parse(fe.dataset.path)); });
-    });
   });
 }
 
@@ -1326,22 +835,14 @@ window.addEventListener('afterprint', function(){ document.body.classList.remove
 
 function reportEntryHtml(d){
   var dday = daysUntil(new Date(d.expireDate));
-  function fileBlock(f){
-    if(f.thumb) return '<img src="'+f.thumb+'" style="width:100px;height:100px;object-fit:cover;border-radius:6px;margin:.2rem;">';
-    return '<div>🎬 '+escapeHtml(f.name)+' ('+Math.round(f.size/1024)+'KB, 폴더 내 원본 참조)</div>';
-  }
-  var defectFiles = (d.files||[]).filter(function(f){ return f.role !== 'repair'; });
-  var repairFiles = (d.files||[]).filter(function(f){ return f.role === 'repair'; });
   return '<div class="report-entry">' +
-    '<div><b>'+escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+'</b> · '+escapeHtml(d.area)+' · '+escapeHtml(YEAR_CLASSES[d.yearClass].label)+' · 심각도 '+escapeHtml(d.severity)+'</div>' +
+    '<div><b>'+escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+'</b> · '+escapeHtml(d.area)+' · '+escapeHtml(ycLabel(d.yearClass))+' · 심각도 '+escapeHtml(d.severity)+'</div>' +
     '<div>하자유형: '+escapeHtml(d.defectType)+' &nbsp;|&nbsp; 근거: '+escapeHtml(d.basis)+'</div>' +
-    '<div>기산일: '+escapeHtml(d.baseDate)+' &nbsp;|&nbsp; 제척기간 만료예정일: '+escapeHtml(d.expireDate)+' &nbsp;|&nbsp; 잔여: '+(dday<0?'도과':('D-'+dday))+'</div>' +
+    (d.baseDate || d.expireDate ? '<div>기산일: '+escapeHtml(d.baseDate)+' &nbsp;|&nbsp; 제척기간 만료예정일: '+escapeHtml(d.expireDate)+' &nbsp;|&nbsp; 잔여: '+(dday==null?'-':(dday<0?'도과':('D-'+dday)))+'</div>' : '') +
     '<div>발견일: '+escapeHtml(d.foundDate)+' &nbsp;|&nbsp; 처리단계: '+escapeHtml(STAGES[d.stage-1].label)+'</div>' +
     (d.collapseFlag ? '<div>⚠ 건물 멸실·훼손 특례 적용 — 멸실·훼손일: '+escapeHtml(d.collapseDate)+', 1년 특례 만료일: '+escapeHtml(d.collapseExpireDate)+' (통상 만료일: '+escapeHtml(d.normalExpireDate)+', 집합건물법 제9조의2 제3항)</div>' : '') +
     (d.description ? '<div>설명: '+escapeHtml(d.description)+'</div>' : '') +
     (d.stageNote ? '<div>진행메모: '+escapeHtml(d.stageNote)+'</div>' : '') +
-    (defectFiles.length ? '<div style="margin-top:.4rem;"><b>하자 사진/동영상</b><br>'+defectFiles.map(fileBlock).join('')+'</div>' : '') +
-    (repairFiles.length ? '<div style="margin-top:.4rem;"><b>보수완료 사진/동영상</b><br>'+repairFiles.map(fileBlock).join('')+'</div>' : '') +
   '</div>';
 }
 
@@ -1363,8 +864,13 @@ function generateAggregateReport(){
   var bySeverity = {'경미':0,'보통':0,'심각':0};
   var byYearClass = {finish2:0,functional3:0,structural5:0,pre5:0,major10:0};
   var byStage = {1:0,2:0,3:0,4:0,5:0,6:0};
-  defects.forEach(function(d){ bySeverity[d.severity]++; byYearClass[d.yearClass]++; byStage[d.stage]++; });
-  var urgent = defects.filter(function(d){ return daysUntil(new Date(d.expireDate)) <= 90; })
+  var unclassifiedCount = 0;
+  defects.forEach(function(d){
+    bySeverity[d.severity]++;
+    if(d.yearClass && byYearClass.hasOwnProperty(d.yearClass)) byYearClass[d.yearClass]++; else unclassifiedCount++;
+    byStage[d.stage]++;
+  });
+  var urgent = defects.filter(function(d){ var dd = daysUntil(new Date(d.expireDate)); return dd != null && dd <= 90; })
     .sort(function(a,b){ return new Date(a.expireDate)-new Date(b.expireDate); });
 
   var statHtml = '<div class="report-stat-grid">' +
@@ -1373,7 +879,8 @@ function generateAggregateReport(){
     '<div class="report-stat">제척기간 임박(90일 이내)<b>'+urgent.length+'건</b></div>' +
   '</div>';
 
-  var ycRows = ['finish2','functional3','structural5','pre5','major10'].map(function(y){ return '<tr><td>'+YEAR_CLASSES[y].label+'</td><td>'+byYearClass[y]+'건</td></tr>'; }).join('');
+  var ycRows = ['finish2','functional3','structural5','pre5','major10'].map(function(y){ return '<tr><td>'+YEAR_CLASSES[y].label+'</td><td>'+byYearClass[y]+'건</td></tr>'; }).join('')
+    + (unclassifiedCount ? '<tr><td>미분류(존속기간 미지정)</td><td>'+unclassifiedCount+'건</td></tr>' : '');
   var stageRows = STAGES.map(function(s){ return '<tr><td>'+s.label+'</td><td>'+byStage[s.n]+'건</td></tr>'; }).join('');
 
   var urgentRows = urgent.map(function(d){
@@ -1383,7 +890,7 @@ function generateAggregateReport(){
 
   var allRows = defects.slice().sort(function(a,b){ return new Date(a.expireDate)-new Date(b.expireDate); }).map(function(d){
     var dday = daysUntil(new Date(d.expireDate));
-    return '<tr><td>'+escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+'</td><td>'+escapeHtml(d.area)+'</td><td>'+escapeHtml(YEAR_CLASSES[d.yearClass].label)+'</td><td>'+escapeHtml(d.defectType)+'</td><td>'+escapeHtml(d.severity)+'</td><td>'+escapeHtml(d.expireDate)+'</td><td>'+(dday<0?'도과':('D-'+dday))+'</td><td>'+escapeHtml(STAGES[d.stage-1].label)+'</td></tr>';
+    return '<tr><td>'+escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+'</td><td>'+escapeHtml(d.area)+'</td><td>'+escapeHtml(ycLabel(d.yearClass))+'</td><td>'+escapeHtml(d.defectType)+'</td><td>'+escapeHtml(d.severity)+'</td><td>'+escapeHtml(d.expireDate)+'</td><td>'+(dday==null?'-':(dday<0?'도과':('D-'+dday)))+'</td><td>'+escapeHtml(STAGES[d.stage-1].label)+'</td></tr>';
   }).join('');
 
   var html = '<div class="report-page">' +
@@ -1403,13 +910,11 @@ function exportDefectsExcel(){
   var rows = defects.map(function(d){
     var dday = daysUntil(new Date(d.expireDate));
     return {
-      '동':d.dong,'호수':d.ho,'구분':d.area,'연차구분':YEAR_CLASSES[d.yearClass].label,'근거':d.basis,
+      '동':d.dong,'호수':d.ho,'구분':d.area,'연차구분':ycLabel(d.yearClass),'근거':d.basis,
       '하자유형':d.defectType,'심각도':d.severity,'발견일':d.foundDate,'기산일':d.baseDate,
       '제척기간만료일':d.expireDate,'잔여일수(D-day)':dday,'처리단계':STAGES[d.stage-1].label,
       '멸실훼손특례':d.collapseFlag ? ('적용(멸실훼손일 '+d.collapseDate+', 통상만료일 '+d.normalExpireDate+')') : '',
-      '진행메모':d.stageNote||'','설명':d.description||'',
-      '하자사진수':(d.files||[]).filter(function(f){ return f.role !== 'repair'; }).length,
-      '보수완료사진수':(d.files||[]).filter(function(f){ return f.role === 'repair'; }).length
+      '진행메모':d.stageNote||'','설명':d.description||''
     };
   });
   var ws = XLSX.utils.json_to_sheet(rows);
@@ -1446,8 +951,8 @@ function renderNoticeDefectChecklist(){
     var dday = daysUntil(new Date(d.expireDate));
     return '<label class="notice-check-item">' +
       '<input type="checkbox" class="notice-check" value="'+d.id+'" '+(d.stage<2?'checked':'')+'>' +
-      escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+' · '+escapeHtml(d.defectType)+' · '+escapeHtml(YEAR_CLASSES[d.yearClass].label)+
-      ' · 만료 '+escapeHtml(d.expireDate)+' ('+(dday<0?'도과':('D-'+dday))+') · 현재단계 '+escapeHtml(STAGES[d.stage-1].label) +
+      escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+' · '+escapeHtml(d.defectType)+' · '+escapeHtml(ycLabel(d.yearClass))+
+      ' · 만료 '+escapeHtml(d.expireDate||'-')+' ('+(dday==null?'-':(dday<0?'도과':('D-'+dday)))+') · 현재단계 '+escapeHtml(STAGES[d.stage-1].label) +
     '</label>';
   }).join('');
 }
@@ -1461,7 +966,7 @@ function generateNotice(){
   if(!noticeMeta.constructorName || !noticeMeta.unionName){ alert('수신인(시공사) 상호와 발신인(관리단) 명칭을 입력·저장하세요.'); return; }
   var rows = selected.map(function(d){
     return '<tr><td>'+escapeHtml(d.dong)+'동 '+escapeHtml(d.ho)+'</td><td>'+escapeHtml(d.area)+'</td>'+
-      '<td>'+escapeHtml(YEAR_CLASSES[d.yearClass].label)+'</td><td>'+escapeHtml(d.defectType)+'</td>'+
+      '<td>'+escapeHtml(ycLabel(d.yearClass))+'</td><td>'+escapeHtml(d.defectType)+'</td>'+
       '<td>'+escapeHtml(d.foundDate)+'</td><td>'+escapeHtml(d.expireDate)+'</td>'+
       '<td>'+escapeHtml(d.description||'')+'</td></tr>';
   }).join('');
@@ -1499,7 +1004,7 @@ function bulkAdvanceStage2(){
     }
     return idbPut('defects', d);
   });
-  Promise.all(jobs).then(function(){ renderDefectsList(); renderNoticeDefectChecklist(); writeBackupJson(); });
+  Promise.all(jobs).then(function(){ renderDefectsList(); renderNoticeDefectChecklist(); });
 }
 
 /* ---------- 백업/초기화 ---------- */
@@ -1524,16 +1029,15 @@ async function importBackup(file){
   await Promise.all(jobs);
   await idbPut('kv', Object.assign({key:'siteMeta'}, siteMeta));
   loadMetaIntoForm();
-  renderUnitsTable(); refreshDefectDependentViews();
+  refreshDefectDependentViews();
   alert('백업을 불러왔습니다.');
 }
 async function resetAll(){
-  if(!confirm('현장 정보, 호수 목록, 하자 기록을 모두 삭제합니다. (저장 폴더의 사진/동영상 파일은 삭제되지 않습니다) 계속할까요?')) return;
+  if(!confirm('현장 정보와 하자 기록을 모두 삭제합니다. 계속할까요?')) return;
   await idbClear('units'); await idbClear('defects'); await idbClear('kv');
   units = []; defects = []; siteMeta = {complexName:'',useApprovalDate:'',inspectionDate:''};
   noticeMeta = {constructorName:'',constructorAddress:'',unionName:'',unionAddress:'',unionRep:'',replyDays:14};
-  rootHandle = null;
-  loadMetaIntoForm(); loadNoticeMetaIntoForm(); renderUnitsTable(); refreshDefectDependentViews(); updateFolderStatusUI(false);
+  loadMetaIntoForm(); loadNoticeMetaIntoForm(); refreshDefectDependentViews();
 }
 
 /* ---------- 현장정보 폼 ---------- */
@@ -1562,9 +1066,7 @@ async function init(){
   if(noticeRow){ noticeMeta = {constructorName:noticeRow.constructorName||'',constructorAddress:noticeRow.constructorAddress||'',unionName:noticeRow.unionName||'',unionAddress:noticeRow.unionAddress||'',unionRep:noticeRow.unionRep||'',replyDays:noticeRow.replyDays||14}; }
   loadNoticeMetaIntoForm();
 
-  units = await idbGetAll('units');
   defects = await idbGetAll('defects');
-  renderUnitsTable();
   refreshDefectDependentViews();
   refreshDefectTypeOptions();
   toggleMoveInVisibility();
@@ -1572,12 +1074,7 @@ async function init(){
   $('defFoundDate').value = todayStr();
   updateDatePreview();
 
-  await tryRestoreFolder();
-
   $('btnSaveMeta').addEventListener('click', saveMeta);
-  $('btnConnectFolder').addEventListener('click', connectFolder);
-  $('btnDownloadTemplate').addEventListener('click', downloadTemplate);
-  $('unitExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleUnitExcel(e.target.files[0]).then(function(){ e.target.value=''; }); });
   $('commonExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '공용부').then(function(){ e.target.value=''; }); });
   $('unitDefectExcelInput').addEventListener('change', function(e){ if(e.target.files[0]) handleDefectExcel(e.target.files[0], '전유부').then(function(){ e.target.value=''; }); });
   $('defectExcelSheet').addEventListener('change', function(e){ loadExcelSheet(e.target.value); });
@@ -1587,36 +1084,18 @@ async function init(){
     if($('commonPasteInput').value.trim()) handleDefectPaste('공용부', 'commonPasteInput');
     else if($('unitPasteInput').value.trim()) handleDefectPaste('전유부', 'unitPasteInput');
   });
-  IMPORT_FIELD_DEFS.forEach(function(f){ $(mapSelId(f.key)).addEventListener('change', onImportMappingChange); });
-  ['defaultYearClass','defaultSeverity','defaultFoundDate'].forEach(function(id){ $(id).addEventListener('change', renderImportPreview); });
   $('btnImportDefects').addEventListener('click', runDefectImport);
-  $('btnAddUnitManual').addEventListener('click', function(){ $('unitAddForm').style.display = $('unitAddForm').style.display==='none'?'grid':'none'; });
-  $('btnSaveUnitManual').addEventListener('click', function(){
-    var dong = $('newUnitDong').value.trim(), ho = $('newUnitHo').value.trim();
-    if(!dong && !ho){ alert('동 또는 호수를 입력하세요.'); return; }
-    upsertUnit({dong:dong, ho:ho, type:$('newUnitType').value, moveInDate:$('newUnitMoveIn').value, note:''}).then(function(){
-      renderUnitsTable();
-      $('newUnitDong').value=''; $('newUnitHo').value=''; $('newUnitMoveIn').value='';
-    });
-  });
-  $('btnClearUnits').addEventListener('click', function(){
-    if(!confirm('호수/공용부 목록을 모두 삭제하시겠습니까? (등록된 하자 기록은 유지됩니다)')) return;
-    idbClear('units').then(function(){ units=[]; renderUnitsTable(); });
-  });
 
-  $('defDong').addEventListener('input', function(){ updateHoOptions(); tryMatchUnit(); });
-  $('defHo').addEventListener('input', tryMatchUnit);
   $('defArea').addEventListener('change', toggleMoveInVisibility);
   $('defMoveIn').addEventListener('change', updateDatePreview);
   $('defCollapseFlag').addEventListener('change', toggleCollapseDateVisibility);
   $('defCollapseDate').addEventListener('change', updateDatePreview);
   $('defYearClass').addEventListener('change', function(){ refreshDefectTypeOptions(); updateDatePreview(); });
   $('defTypeSelect').addEventListener('change', toggleTypeOther);
-  $('defFiles').addEventListener('change', function(e){ handleDefFilesChange(e.target.files); });
   $('defectForm').addEventListener('submit', saveDefect);
   $('btnCancelEdit').addEventListener('click', function(){
     editingDefectId = null; document.getElementById('defectForm').reset();
-    pendingFiles=[]; $('defFilePreview').innerHTML=''; $('defFoundDate').value = todayStr();
+    $('defFoundDate').value = todayStr();
     refreshDefectTypeOptions(); toggleMoveInVisibility(); toggleCollapseDateVisibility(); $('btnCancelEdit').style.display='none';
   });
 
