@@ -20,6 +20,10 @@
   blockquote p{margin:.3rem 0;}
   table{border-collapse:collapse;}
   .site-footer{text-align:center; color:#8b96a8; font-size:.85rem; padding:2.5rem 1rem 1rem;}
+  @media (max-width:600px){
+    .page-wrap{padding:1.2rem .8rem 3rem;}
+    h1{font-size:1.5rem;}
+  }
 </style>
 </head>
 <body>
@@ -272,12 +276,35 @@ body.report-preview-open .report-print-area{
 .report-page h1{font-size:1.4rem;border-bottom:3px solid #16233c;padding-bottom:.4rem;}
 .report-page h2{font-size:1.1rem;margin-top:1.4rem;}
 .report-meta{color:#5a6577;font-size:.9rem;margin-bottom:1rem;}
+.report-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .report-table{width:100%;border-collapse:collapse;font-size:.8rem;margin:.6rem 0 1.2rem;}
-.report-table th,.report-table td{border:1px solid #ccc;padding:.35rem .5rem;text-align:left;}
+.report-table th,.report-table td{border:1px solid #ccc;padding:.35rem .5rem;text-align:left;white-space:nowrap;}
 .report-table th{background:#eef1f7;}
 .report-stat-grid{display:flex;flex-wrap:wrap;gap:1rem;margin:.8rem 0;}
 .report-stat{border:1px solid #ccc;border-radius:8px;padding:.6rem 1rem;min-width:140px;}
 .report-stat b{display:block;font-size:1.2rem;}
+
+/* ---------- 스마트폰 세로보기 최적화 ---------- */
+@media (max-width:600px){
+  .haza-card{padding:1rem;}
+  .haza-card h3{font-size:1.05rem;}
+  .haza-login-card{max-width:none;}
+  .haza-import-columns{grid-template-columns:1fr;gap:.8rem;}
+  .haza-grid{grid-template-columns:1fr;}
+  .haza-grid input[type=text],.haza-grid input[type=date],.haza-grid input[type=password],
+  .haza-grid select,.haza-grid textarea,
+  .haza-toolbar input[type=text],.haza-toolbar select{font-size:16px;}
+  .haza-toolbar{flex-direction:column;align-items:stretch;}
+  .haza-toolbar .haza-btn,.haza-toolbar .haza-file-btn{width:100%;text-align:center;box-sizing:border-box;}
+  .haza-btn,.haza-file-btn{padding:.75em 1rem;font-size:.95rem;}
+  .haza-table-wrap{-webkit-overflow-scrolling:touch;}
+  .report-toolbar{flex-direction:column;align-items:stretch;}
+  .report-toolbar .haza-btn{width:100%;text-align:center;box-sizing:border-box;}
+  body.report-preview-open .report-print-area{padding:.8rem;}
+  .report-page h1{font-size:1.15rem;}
+  .report-stat-grid{gap:.6rem;}
+  .report-stat{min-width:120px;padding:.5rem .8rem;}
+}
 </style>
 
 <script src="assets/js/xlsx.core.min.js"></script>
@@ -610,7 +637,7 @@ function buildProgressReportHtml(siteName, siteDefects, note){
     '<div class="report-stat-grid">'+statCards+'</div>' +
     (note ? '<h2>본사 참고보고 사항</h2><p class="report-meta" style="white-space:pre-wrap;">'+escapeHtml(note)+'</p>' : '') +
     '<h2>업로드 목록</h2>' +
-    '<table class="report-table"><thead><tr><th>순번</th><th>구분</th><th>동</th><th>호수</th><th>하자유형</th><th>접수일</th><th>완료여부</th></tr></thead><tbody>'+rows+'</tbody></table>' +
+    '<div class="report-table-wrap"><table class="report-table"><thead><tr><th>순번</th><th>구분</th><th>동</th><th>호수</th><th>하자유형</th><th>접수일</th><th>완료여부</th></tr></thead><tbody>'+rows+'</tbody></table></div>' +
   '</div>';
 }
 
